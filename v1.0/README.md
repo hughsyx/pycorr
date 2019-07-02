@@ -36,6 +36,10 @@ git clone https://github.com/obspy/obspy.git
 pip install /home/bouep/DATA/obspy  
 
 
+set your python path :
+export PYTHONPATH=".../pycorr/v1.0:$PYTHONPATH"
+
+
 # Use :
 
 ## Get a station list form FDSN:
