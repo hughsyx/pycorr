@@ -1,18 +1,20 @@
 #!/bin/bash
 
-python 00_get_stations.py
-python 01_config_download.py
-python 02_download_data.py
-python 03_preprocess_noise.py
+python 00_get_events.py
+python 01_get_stations.py
+python 02_config_download.py
 
-for i in `seq 1 ${1}`;
+for script in 03_download_data 04_xcorr;
 do
-        python 04_xcorr.py > stdout_04_${i}.txt &
-        echo $i
-        pids[${i}]=$!
+    for i in `seq 1 ${1}`;
+    do
+            python ${script}.py > log_${script}_${i}.stdout &
+            echo $i
+            pids[${i}]=$!
+    done
+    for pid in ${pids[*]}; do
+        wait $pid
+    done
 done
-# wait for all pids
-for pid in ${pids[*]}; do
-    wait $pid
-done
+python 05_plots.py
 echo "done"
