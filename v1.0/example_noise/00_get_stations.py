@@ -21,16 +21,16 @@ stafile                = 'stations' # output name (.txt and .png)
 
 ###############  channel ID
 
-in_['net']                 = 'YP' # 'net1,net2,net2...' accept wildcard
-in_['sta']                 = 'CT1*,CT2*' # 'sta1,sta2,sta3...' accept wildcard
+in_['net']                 = 'G,II' # 'net1,net2,net2...' accept wildcard
+in_['sta']                 = '*' # 'sta1,sta2,sta3...' accept wildcard
 in_['loc']                 = '*' # 'loc1,loc2,loc3...' accept wildcard
-in_['channel']             = 'HH*' # 'ch1,ch2,ch3...' accept wildcard
+in_['channel']             = 'LH*' # 'ch1,ch2,ch3...' accept wildcard
 in_['includeavailability'] = True  # Specify if results should include information
                                    # about time series data availability at the channel level.
 ###############  date selection
 
-in_['startbefore']     = '2013-04-16' # yyyy-mm-dd
-in_['endafter']        = '2013-04-30' # yyyy-mm-dd
+in_['startbefore']     = '2018-04-16' # yyyy-mm-dd
+in_['endafter']        = '2018-05-16' # yyyy-mm-dd
 #in_['start']           = '2013-04-16' # yyyy-mm-dd
 #in_['end']             = '2013-04-30' # yyyy-mm-dd
 

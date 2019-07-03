@@ -41,7 +41,8 @@ class c1_trace :
     def filter(self,p1,p2,npole=2,plot_filter=False) :
         '''filter the trace btw p1 and p2 s'''
         b,a = signal.butter(npole,(2.*self.tau/p2,2.*self.tau/p1),'bandpass',analog=False,output='ba')
-        self.tr = signal.filtfilt(b,a,self.tr,axis=0) #padtype=None)
+        pad = signal.tukey(len(self.tr), alpha=0.03)
+        self.tr = signal.filtfilt(b,a,self.tr*pad,axis=0) #padtype=None)
         if plot_filter :
             plt.clf()
             w, h = signal.freqs(b,a)

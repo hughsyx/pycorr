@@ -289,15 +289,15 @@ class c1_md :
         if idvr[0]=='all':
             for ista in range(0,len(lat)):
                 ax.plot(lon[ista],lat[ista], "o", color=color_vr, 
-                    markeredgecolor = 'k',markersize=size_vr,transform=ccrs.Geodetic())
+                    markeredgecolor = 'k',markersize=size_vr,transform=ccrs.Geodetic(),alpha=0.5)
         else:
             for iidvr in idvr:
                 ax.plot(lon[idsta.index(iidvr)],lat[idsta.index(iidvr)], "o", color=color_vr, 
-                    markeredgecolor = 'k',markersize=7,transform=ccrs.Geodetic())
+                    markeredgecolor = 'k',markersize=7,transform=ccrs.Geodetic(),alpha=0.5)
         if idvs != []:
             for iidvs in idvs:
                 ax.plot(lon[idsta.index(iidvs)],lat[idsta.index(iidvs)], "o", color=color_vs, 
-                    markeredgecolor = 'k',markersize=5,transform=ccrs.Geodetic())
+                    markeredgecolor = 'k',markersize=5,transform=ccrs.Geodetic(),alpha=0.5)
 
         if map_show==1:
             plt.show()
@@ -643,7 +643,7 @@ class c1_md :
             for idx,tr in enumerate(data.transpose()):
                 if opt['norm_tr'] and abs(tr).max(): tr=tr/abs(tr).max()
                 ax.plot(time,tr*opt['norm']+dist[idx],color='k')
-        if opt['lag'] == None:opt['lag']=self.md_c['tau']*(len(time)-1)/2
+        if opt['lag'] == None:opt['lag']=self.md_c['tau']*(len(time)-1)
         if opt['ctype']=='NP':ax.set_xlim(-opt['lag'],+opt['lag'])
         else:ax.set_xlim(0,+opt['lag'])
         if len(dist)==1:ax.set_ylim(dist[0]-1,dist[0]+1)

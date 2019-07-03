@@ -746,8 +746,11 @@ def ml_stack_and_write_this_set_in_hdf5(in_,md_c,kset) :
     # determine the reference by summing daily correlations : 
     ref_nstack = ff.create_dataset('/ref_nstack',(ncmp,ncpl),dtype=in_['cc_dtype'])
 
+
     for ipath in range(0,ncpl) :
-        dd.dispc(str(ipath) + ' / ' +  str(ncpl) + '  paths','gray','r')
+        perc = ipath * 100. / (ncpl-1)
+        if perc % 10 == 0:
+            dd.dispc(str(ipath+1) + ' / ' +  str(ncpl) + '  paths','gray','r')
         for icmp in range(0,ncmp) :
             ref_nstack[icmp,ipath] = np.sum(cc_nstack[icmp,ipath,:],axis=0)
             dset_name=h5_get_station_pair_tree_path(kset['md']['id'][ipath],in_['cc_cmp'][icmp])

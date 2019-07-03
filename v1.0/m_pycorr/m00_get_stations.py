@@ -114,16 +114,23 @@ def find_stations(input_user={},stafile='stations',all_locid_and_channel=False):
                             dico[dc][Kname]['EndTime'] = UTCDateTime(line_info[int(list(idico.keys())[list(idico.values()).index('EndTime')])])
 
         # keep only the first Kname (alphabetical order)
+        list_of_sKname = []
+        list_of_Kname  = []
         if not all_locid_and_channel:
             sdico = {}
             for dc in dico.keys():
                 sdico[dc] = {}
                 for Kname in np.sort([*dico[dc].keys()]).tolist():
+                    #list_of_Kname.append(Kname + ' from' + dc)
                     sKname = dico[dc][Kname]['Network'] + '_' + dico[dc][Kname]['Station']
-                    if sKname not in sdico[dc]:
+                    if sKname not in list_of_sKname:
+                        list_of_sKname.append(sKname)
+                        list_of_Kname.append(Kname + ' from ' + dc)
                         sdico[dc][sKname] = dico[dc][Kname]
+                    else:
+                        firstKname =   list_of_Kname[list_of_sKname.index(sKname)]
+                        #dd.dispc('multiple answer for ' + sKname + ' keeping ' + firstKname,'y','n')
             dico = sdico
-
 
         dd.dd(dico)
         ff = open(stafile + '.pkl','wb')
