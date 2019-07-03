@@ -23,25 +23,20 @@ conda update -n base -c defaults conda
 conda create -n mypy3 python=3.7  
 conda activate mypy3  
 conda install h5py  
-conda install ipdb
-conda install cartopy 
-conda install statsmodels
-onda install scikit-learn
+conda install ipdb  
+conda install cartopy   
+conda install statsmodels  
+onda install scikit-learn  
 
-conventional installation of obpsy :
+conventional installation of obpsy :  
 conda install obspy  
 
 or MASTER version obspy:  
-git clone https://github.com/obspy/obspy.git  
+git clone https://github.com/obspy/obspy.git    
 pip install /home/bouep/DATA/obspy  
 
 
-set your python path :
+set your python path :  
 export PYTHONPATH=".../pycorr/v1.0:$PYTHONPATH"
 
 
-# Use :
-
-## Get a station list form FDSN:
-
-...
