@@ -225,7 +225,6 @@ def _main_loop(in_dir,out_dir,flist,in_) :
                                 ####### RUN PROCESSING OR CUT
                                 else :
                                     if not segment:
-                                        #ipdb.set_trace()
                                         trace, nin_ = fh(trace,fe,dico_method)
                                         dico_method = nin_
                                     else:
@@ -372,7 +371,7 @@ def _comb_filter(trace,fe,inu={}):
     for iper in np.arange(0,nper) :
         trace_tmp = __filter(trace,in_['p1'][iper],in_['p2'][iper],1./float(fe),order=2)
         env       = abs(hilbert(trace_tmp))
-        trace_tmp = __norm(trace_tmp/float(env))
+        trace_tmp = __norm(trace_tmp/env)
         trace2    = trace2 + trace_tmp 
     return trace2 ,in_
 
