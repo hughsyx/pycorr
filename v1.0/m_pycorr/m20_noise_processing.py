@@ -16,6 +16,7 @@ import glob
 import h5py
 import pickle
 import shutil
+import random 
 import numpy as np 
 from numpy.lib.scimath import sqrt as csqrt
 import scipy.signal as signal 
@@ -105,7 +106,7 @@ def _main_loop(in_dir,out_dir,flist,in_) :
     mkdir(out_dir)
     year_list = glob.glob(in_dir+'/daily/*/*/')
     year_list.sort()
-        
+    random.shuffle(year_list)    
     # loop on year & creating the corresponding output dir 
     for iyear in year_list :
 
@@ -126,6 +127,7 @@ def _main_loop(in_dir,out_dir,flist,in_) :
         #    fe = float(in_dir.split('/')[-1].split('_')[1].split('h')[0])
 
         #loop on daily h5 files : 
+        random.shuffle(h5_list)
         for ih5 in h5_list : 
             out_h5      = out_year + '/'+ih5.split('/')[-1]
             out_h5_lock = out_h5+'.lock'
@@ -152,7 +154,11 @@ def _main_loop(in_dir,out_dir,flist,in_) :
 
             # open the input & output file, and scann all metadata and waveforms :
             ff   = h5py.File(ih5,'r')
-            fout = h5py.File(out_h5,'w')
+            fout = h5py.File(out_h5,'w') 
+            #except :
+            #    dd.dispc('')
+            #    os.remove(out_h5_lock)
+            #    continue 
 
             if '/_metadata' in ff: fout.copy(ff['/_metadata'],'/_metadata')
             #determining the sampling rate from _metadata
