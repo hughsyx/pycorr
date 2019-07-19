@@ -16,6 +16,7 @@ import glob
 import h5py
 import pickle
 import shutil
+import random 
 import numpy as np 
 from numpy.lib.scimath import sqrt as csqrt
 import scipy.signal as signal 
@@ -105,7 +106,7 @@ def _main_loop(in_dir,out_dir,flist,in_) :
     mkdir(out_dir)
     year_list = glob.glob(in_dir+'/daily/*/*/')
     year_list.sort()
-        
+    random.shuffle(year_list)    
     # loop on year & creating the corresponding output dir 
     for iyear in year_list :
 
@@ -126,6 +127,7 @@ def _main_loop(in_dir,out_dir,flist,in_) :
         #    fe = float(in_dir.split('/')[-1].split('_')[1].split('h')[0])
 
         #loop on daily h5 files : 
+        random.shuffle(h5_list)
         for ih5 in h5_list : 
             out_h5      = out_year + '/'+ih5.split('/')[-1]
             out_h5_lock = out_h5+'.lock'
@@ -151,8 +153,11 @@ def _main_loop(in_dir,out_dir,flist,in_) :
                     #print(evt_db['cat'])
 
             # open the input & output file, and scann all metadata and waveforms :
-            ff   = h5py.File(ih5,'r')
-            fout = h5py.File(out_h5,'w')
+            try :
+                ff   = h5py.File(ih5,'r')
+                fout = h5py.File(out_h5,'w') 
+            except : 
+                continue
 
             if '/_metadata' in ff: fout.copy(ff['/_metadata'],'/_metadata')
             #determining the sampling rate from _metadata
@@ -167,24 +172,42 @@ def _main_loop(in_dir,out_dir,flist,in_) :
                 numfct_r += 1
                 fout = add_metadata(fout,'_metadata/' + '_%02d' % float(numfct_r) + fh.__name__,in_['args'][numfct - 1])
 
-            net_list = ff.items()
+            net_list = ff.keys()
             for inet in net_list :
-                if inet[0] not in ['_metadata']:
-                    fout.create_group(inet[0])
-                    sta_list=inet[1].items()
+                if inet not in ['_metadata']:
+                    fout.create_group(inet)
+                    # test d'integrite 1 
+                    try :
+                        sta_list = ff[inet].keys()
+                        len(sta_list)
+                    except :
+                        continue 
                     for ista in sta_list :
-                        group_name='/'+inet[0]+'/'+ista[0]
+                        group_name='/'+inet+'/'+ista
+                        print(group_name)
                         fout.create_group(group_name)
-                        #dd.dispc('   '+ista[0],'c','b')
-                        for ich in ista[1].items() :
-
+                        # integrity check
+                        try :
+                            for ich in ff[group_name] :
+                                pass
+                        except :
+                            continue 
+                        
+                        for ich in ff[group_name]  : 
+                        #for ich in ista[1].items() :
                             # get fe init for each trace
                             if '/_metadata/fe' in ff: fe = ff['/_metadata/fe'][()]
                             else : fe = float(in_dir.split('/')[-1].split('_')[1].split('h')[0])
-                            dataset_name= '/'+inet[0]+'/'+ista[0]+'/'+ich[0]
-                            ff.copy(dataset_name,fout[group_name])
-                            trace = ich[1][:]
-                            
+                            dataset_name= '/'+inet+'/'+ista+'/'+ich
+                            #print('  '+dataset_name)
+                            # integrity check 2 : 
+                            try : 
+                                trace = ff[dataset_name][:] 
+                            except : 
+                                continue 
+                            #print('    got trace')
+                            fout.create_dataset(dataset_name,data = trace)
+                            #print('    created dataset')
                             segment      = False
                             method_index = 0
                             for fh in flist:
@@ -219,7 +242,6 @@ def _main_loop(in_dir,out_dir,flist,in_) :
                                 ####### RUN PROCESSING OR CUT
                                 else :
                                     if not segment:
-                                        #ipdb.set_trace()
                                         trace, nin_ = fh(trace,fe,dico_method)
                                         dico_method = nin_
                                     else:
@@ -252,10 +274,6 @@ def _main_loop(in_dir,out_dir,flist,in_) :
                                     fout.create_dataset(dataset_name,data = trace)
                                 else:
                                     fout[dataset_name][:] = trace
-
-
-
-
                             
             #cleaning
             fout.close()
@@ -366,7 +384,7 @@ def _comb_filter(trace,fe,inu={}):
     for iper in np.arange(0,nper) :
         trace_tmp = __filter(trace,in_['p1'][iper],in_['p2'][iper],1./float(fe),order=2)
         env       = abs(hilbert(trace_tmp))
-        trace_tmp = __norm(trace_tmp/float(env))
+        trace_tmp = __norm(trace_tmp/env)
         trace2    = trace2 + trace_tmp 
     return trace2 ,in_
 
