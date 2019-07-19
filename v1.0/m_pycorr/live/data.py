@@ -3,7 +3,7 @@
 """Read seismic data."""
 
 # Main author : Léonard Seydoux
-# modified by Pierre Boué
+# modified by Pierre Boué test
 
 import glob
 import obspy
