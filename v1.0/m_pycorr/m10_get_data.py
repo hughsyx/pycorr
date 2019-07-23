@@ -368,11 +368,12 @@ def core_download(in_,db,md,path,date1,date2):
     ''' 
     loop over station list and channel for a given range of dates...
     '''
-    for ista in db['sta'].values() : 
-        for icmp in db['in_']['cmp'] : 
+    for ista in db['sta'].values() :
+        ista_arg = ista.copy()
+        for icmp in db['in_']['cmp'] :
             t0        = time.time()
             queue     = multiprocessing.Queue()                                                
-            queue.put([ista,0.])               # the second arg will contain the result 
+            queue.put([ista_arg,0.])               # the second arg will contain the result 
             time.sleep(0.01)
             
             if has_this_ch_already_been_dowloaded(in_['mode'],path['h5_file'],ista,icmp,md) : continue #
@@ -398,7 +399,7 @@ def core_download(in_,db,md,path,date1,date2):
                         md[ista['kname']][icmp]['success']            = False 
                         continue
                     #attempt to load the data by running a subprocess that will be killed after X seconds
-                    args      = (queue,db['in_'],path['h5_file'],data_center,date1,date2,ista,icmp) 
+                    args      = (queue,db['in_'],path['h5_file'],data_center,date1,date2,ista_arg,icmp) 
                 else:
                     dd.dispc('Events not implemented for SDS archive yet!','r','b')
             else:
@@ -411,12 +412,12 @@ def core_download(in_,db,md,path,date1,date2):
                     md[ista['kname']][icmp]['output']             = 'could not initialize the client'
                     md[ista['kname']][icmp]['success']            = False 
                     continue
-                args      = (queue,db['in_'],path['h5_file'],client,date1,date2,ista,icmp)
+                args      = (queue,db['in_'],path['h5_file'],client,date1,date2,ista_arg,icmp)
             #attempt to download the data by running a subprocess that will be killed after X seconds
 
             ###################
             ###################
-            pp        = multiprocessing.Process(target=load_from_source, name="load_from_source", args=args) 
+            pp        = multiprocessing.Process(target=load_from_source, name="load_from_source", args=args)
             ###################
             ###################
 
@@ -433,7 +434,8 @@ def core_download(in_,db,md,path,date1,date2):
             result   = queue.get() 
             new_ista = result[0]  # if not timoeout : get updated station info with locid and channel (BH,HH)
             
-            db['sta'][ista['kname']] = new_ista
+            db['sta'][ista['kname']] = new_ista.copy()
+            ista_arg                 = new_ista.copy()
 
             if time_out== False :            
                 md[ista['kname']][icmp]             = result[1]
@@ -594,9 +596,9 @@ def load_from_source(queue,in_,out_file,client,date1,date2,ista,icmp) :
             else : 
                 st = read_SDS(ista['net'],ista['name'],ista['loc'],ista['ch']+icmp,date1-tap_len,date2+tap_len,archive_path,meta_path,tap_len,remove_resp)
         else :
-            if'ch' not in ista :
+            if 'ch' not in ista :
                 dd.dispc('      attempting to find ch (WEB)','c','d')
-                st,ista = determine_ch_and_locid_from_client(ista,icmp,in_['ch'],client,date1-tap_len,date2+tap_len) 
+                st,ista = determine_ch_and_locid_from_client(ista,icmp,in_['ch'],client,date1-tap_len,date2+tap_len)
             else :
                 try :
                     st = client.get_waveforms(ista['net'],ista['name'],ista['loc'],ista['ch']+icmp,date1-tap_len,date2+tap_len,attach_response=True)
