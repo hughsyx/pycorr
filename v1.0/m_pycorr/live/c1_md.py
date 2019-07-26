@@ -1,6 +1,6 @@
 import m_pycorr.mods.dd as dd 
-import live.python.mods.h5 as h5 
-from live.python.c1_trace import c1_trace as c1_trace  
+import m_pycorr.live.mods.h5 as h5 
+from m_pycorr.live.c1_trace import c1_trace as c1_trace  
 
 import os , glob , h5py, pickle
 import numpy as np 
@@ -260,7 +260,7 @@ class c1_md :
         lon   = self.get_station_list()['lon']
         idsta = list(self.get_station_list()['id'])    
         minlat = -90 
-        maxlat = 90
+        maxlat = 89
         minlon = -180
         maxlon = 180
         dl_lat=abs(max(lat) - min(lat))*0.05

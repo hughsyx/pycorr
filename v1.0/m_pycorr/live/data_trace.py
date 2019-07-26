@@ -4,7 +4,7 @@
 
 import numpy as np
 import scipy.signal as signal 
-import live.python.mods.s2d as s2d 
+import m_pycorr.live.mods.s2d as s2d 
 import matplotlib.pyplot as plt
 import matplotlib.patches as pt 
 from matplotlib.collections import PatchCollection

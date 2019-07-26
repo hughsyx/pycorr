@@ -1,8 +1,8 @@
 import os , glob , h5py, cPickle
 import numpy as np 
 import m_pycorr.mods.dd as dd 
-import live.python.mods.h5 as h5 
-from live.python.data_trace import data_trace as data_trace  
+import m_pycorr.live.mods.h5 as h5 
+from m_pycorr.live.data_trace import data_trace as data_trace  
 from obspy.geodetics import gps2dist_azimuth as gps2dist 
 try :
 	import ipdb 
