@@ -817,7 +817,7 @@ def pws(data,timegate,power,fe,frmt) :
 #        stack += c * trace
 #    return stack
 
-def pws(data,m,n,sing) :
+def svd_wiener2(data,m,n,sing) :
     return data
 
 
