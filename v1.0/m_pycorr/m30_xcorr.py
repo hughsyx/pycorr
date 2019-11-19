@@ -817,6 +817,9 @@ def pws(data,timegate,power,fe,frmt) :
 #        stack += c * trace
 #    return stack
 
+def pws(data,m,n,sing) :
+    return data
+
 
 #-----------------------------------------------------------------------------
 #                       correlate_this_set subfunctions 
