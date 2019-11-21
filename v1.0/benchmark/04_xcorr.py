@@ -85,6 +85,11 @@ in_['remove_daily_file'] = False   # If True, remove daily files, and keep only 
 in_['pws']               = True # apply pws() instead of mean()
 in_['pws_timegate']      = 120. # pws params see Schimmel and Paulsen 1997
 in_['pws_power']         = 2. # pws params see Schimmel and Paulsen 1997
+## svd_wiener2 ? (pws OR svd_wiener2... not both)
+in_['svd_wiener2']       = False # apply svd-wiener2 filter before stacking Moreau et al. 2017 (GJI)
+in_['svd_wiener2_m']     = 20 # date axis, number of point for wiener window 
+in_['svd_wiener2_n']     = 20 # time lag axis, number of point for wiener window
+in_['svd_wiener2_nvs']   = None # number of singular value to keep, None will keep only singular values > 10% min value
 
 ############## MISC
 

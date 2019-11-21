@@ -57,6 +57,7 @@ in_['file_size']         = 1. # [Gb] maximum size of each final h5 file, an good
 ############## DATES
 in_['start_time']        = 3600*4 # start correlating n sec after source time 
 in_['time_win']          = 3600*4 # time window to correlate in sec
+in_['time_overlap']      = 0 # time window to correlate in sec
 
 ############## CC PARAMS
 in_['cc_maxlag']         = 3600. # [s], correlations will corresponds to cc_maxlag*2*fe+1 samples 
