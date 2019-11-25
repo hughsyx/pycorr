@@ -174,6 +174,35 @@ def xcorr_from_firecore_station_list(inu,station_file,fe,cut_len) :
     main_loop(ex) 
 
 
+def xcorr_from_station_list_multi_path(inu,station_file,fe,cut_len) :
+    ''' quickly written. To be done properly later'''
+    db={}
+    for iii,iset in inu['path']:
+        ff=open(station_file[iii],"r")
+        lines=ff.readlines()
+        db[iset]=dict()
+        db[iset]['in_']={'tag' : 'set_0','pp' :{'cut_len' :cut_len}}
+        db[iset]['sta']=dict()
+        for iline in lines:
+            cline=iline.split(' ')
+            if cline[3]=='--':
+                kname=cline[1]+'_'+cline[2]+'_00'
+            else:
+                kname=cline[1]+'_'+cline[2]+'_'+cline[3]
+            db[iset]['sta'][kname]={}
+            db[iset]['sta'][kname]['name'] = cline[2]
+            db[iset]['sta'][kname]['lat']  = float(cline[4])
+            db[iset]['sta'][kname]['lon']  = float(cline[5])
+            db[iset]['sta'][kname]['elev'] = float(cline[6])
+            db[iset]['sta'][kname]['depth']= float(cline[7])
+            db[iset]['sta'][kname]['dc']   = cline[0]
+            db[iset]['sta'][kname]['net']  = cline[1]
+            db[iset]['sta'][kname]['loc']  = cline[3] #string !
+            db[iset]['sta'][kname]['kname']= kname 
+        ff.close()
+    ex=xcorr(inu,db,fe)
+    main_loop(ex)
+
 
 def xcorr_from_station_list(inu,station_file,fe,cut_len) :
     ''' quickly written. To be done properly later'''
