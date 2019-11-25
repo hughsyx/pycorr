@@ -176,8 +176,9 @@ def xcorr_from_firecore_station_list(inu,station_file,fe,cut_len) :
 
 def xcorr_from_station_list_multi_path(inu,station_file,fe,cut_len) :
     ''' quickly written. To be done properly later'''
+    #station_file is a list in the sme order as path
     db={}
-    for iii,iset in inu['path']:
+    for iii,iset in enumerate(inu['path']):
         ff=open(station_file[iii],"r")
         lines=ff.readlines()
         db[iset]=dict()
