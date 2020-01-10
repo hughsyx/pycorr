@@ -852,7 +852,7 @@ def process_trace(st,pp,t1,t2) :
         st.filter('bandpass',freqmin=f_prefilt[0],freqmax=f_prefilt[1],zerophase=True) 
         st.trim(starttime=t1-tap_len,endtime=t2+tap_len,fill_value=0,pad=True)
         st.interpolate(newfreq,starttime=t1,npts=int(theo_npts*newfreq),method='cubic')
-    elif L/float((newfreq*Ltrace)) > 0.20:
+    elif L/float((newfreq*Ltrace)) > 0.01:
         st.taper(100,max_length=600)
         if remove_resp:
             st.remove_response(output="VEL",taper = False, water_level = 60.0)
@@ -938,7 +938,12 @@ def glitchCorrectionWithFactorStd(Trace, FactorTestStd, NumberOfStd = 1, FactorR
 
 def initialize_client(data_center,db) :
     try :
-        client = obspy.clients.fdsn.Client(data_center,user=db['user_id'],password=db['password'])
+        if data_center=='IRISPH5':
+            dd.dispc('  IRISPH5 ...','b','n')
+            DATASELECT="http://service.iris.edu/ph5ws/dataselect/1"
+            client = obspy.clients.fdsn.Client(service_mappings={'dataselect': DATASELECT})
+        else:
+            client = obspy.clients.fdsn.Client(data_center,user=db['user_id'],password=db['password'])
     except : 
         client = False
         dd.dispc('  data center ' + data_center + ' cannot be reach','r','n')
