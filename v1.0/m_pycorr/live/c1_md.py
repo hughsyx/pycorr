@@ -70,9 +70,9 @@ class c1_md :
     When run the 1st time, it scans all correlations and create a db.pkl file  containing their metadata. 
     '''
     def get_selection(self,idvs=[],idvr=[],icmp=0,tmin=None,tmax=None,
-        dmin=None,dmax=None, filter_p=True,p1=10.,p2=100.,ctype='NP',norm_tr=False,
-        bin_distance=False,bin_width=1.,save=True,frmt='mat',file_name='./test.mat',
-        dist_unit='km',time_unit='s',iddate=-1,slant_stack={'type':'off','u':1/3.,
+        dmin=None,dmax=None, filter_p=False,p1=10.,p2=100.,filter_f=False,f1=10.,f2=100.,
+        ctype='NP',norm_tr=False,bin_distance=False,bin_width=1.,save=True,frmt='mat',
+        file_name='./test.mat',dist_unit='km',time_unit='s',iddate=-1,slant_stack={'type':'off','u':1/3.,
         'sum':{'type':'linear','timegate':20,'power':2}}) :
         ''' save or get a selection of correlations and the corresponding metadata as pkl or mat file
             default args :
@@ -85,9 +85,12 @@ class c1_md :
                                   idvr the full list of available station.
         
             icmp = 0            : scalar, index of the component as in self.in_['cc_cmp'] or self.in_rot['cc_cmp'] if self.rtz=True
-            filter_p = True     : boolean, switch on/off a band-pass filter in period
+            filter_p = Flase    : boolean, switch on/off a band-pass filter in period
             p1 = 10.            : scalar, period min if filter_p=True
             p2 = 100.           : scalar, period max if filter_p=True
+            filter_f = False    : boolean, switch on/off a band-pass filter in frequency
+            f1 = 10.            : scalar, freq min if filter_f=True
+            f2 = 100.           : scalar, freq max if filter_f=True
             ctype = 'NP'        : srting, 'NP' for full correlation, 'N' or 'P' for negative 
                                            or positive part respectively, 'S' for symmetric part
             norm_tr = False     : boolean, switch on/off normalize each trace by its max(abs())        
@@ -110,8 +113,9 @@ class c1_md :
         opt = {}
         opt['file_name']    = file_name
         opt['icmp']         = icmp
-        opt['filter']       = filter_p
         opt['p']            = [p1,p2]
+        opt['filter_f']      = filter_f
+        opt['f']            = [f1,f2]
         opt['ctype']        = ctype
         opt['save']         = save
         opt['format']       = frmt
@@ -142,9 +146,9 @@ class c1_md :
 
 
     def plot_selection(self,idvs=[],idvr=[],icmp=0,lag=None,tmin=None,tmax=None,
-        dmin=None,dmax=None,filter_p=True,p1=10.,p2=100.,ctype='NP',norm=1,norm_tr=False,
-        bin_distance=True,bin_width=1.,cmap='gray',save_plot=False,file_name='./test.png',
-        dist_unit='km',time_unit='s',iddate=-1):
+        dmin=None,dmax=None,filter_p=False,p1=10.,p2=100.,filter_f=False,f1=10.,f2=100.,
+        ctype='NP',norm=1,norm_tr=False,bin_distance=True,bin_width=1.,cmap='gray',
+        save_plot=False,file_name='./test.png',dist_unit='km',time_unit='s',iddate=-1):
         ''' plot a selection of correlations.
             default args :
             idvs=[], idvr=[]    : id virtual source(s)/receiver(s), as list of station names
@@ -159,9 +163,12 @@ class c1_md :
             lag  = None         : scalar, lag-time to plot (unit is defined by time_unit), default None=>full range
             tmin/max = None     : scalar, min/max lag-time of the output, default corresponds to full scale
             dmin/max = None     : scalar, min/max distance of the output, default corresponds to full scale
-            filter_p = True     : boolean, switch on/off a band-pass filter in period
+            filter_p = Flase    : boolean, switch on/off a band-pass filter in period
             p1 = 10.            : scalar, period min if filter_p=True
             p2 = 100.           : scalar, period max if filter_p=True
+            filter_f = False    : boolean, switch on/off a band-pass filter in frequency
+            f1 = 10.            : scalar, freq min if filter_f=True
+            f2 = 100.           : scalar, freq max if filter_f=True
             ctype = 'NP'        : srting, 'NP' for full correlation, 'N' or 'P' for negative 
                                            or positive part respectively, 'S' for symmetric part
             norm  = 1           : scalar, a normalization factor. 
@@ -182,8 +189,10 @@ class c1_md :
         '''
         opt = {}
         opt['icmp']         = icmp
-        opt['filter']       = filter_p
+        opt['filter_p']       = filter_p
         opt['p']            = [p1,p2]
+        opt['filter_f']       = filter_f
+        opt['f']            = [f1,f2]
         opt['ctype']        = ctype
         opt['lag']          = lag       
         opt['tlim']         = [tmin,tmax]
@@ -214,15 +223,17 @@ class c1_md :
         self._plot_idv(data,time,dist,vs,vr,opt)
         return
 
-    def plot_path(self,id1=None,id2=None,V_cmp=range(9),lag=3600,filter_p=True,p1=10.,p2=100.,
-        ctype='NP',norm=1,norm_tr=False,save_plot=False,file_name='./test.png',time_unit='s') :
+    def plot_path(self,id1=None,id2=None,V_cmp=range(9),lag=3600,filter_p=False,p1=10.,p2=100.,
+        filter_f=False,f1=10.,f2=100.,ctype='NP',norm=1,norm_tr=False,save_plot=False,
+        file_name='./test.png',time_unit='s') :
         opt = {}
         opt['id1']       = id1
         opt['id2']       = id2
         opt['V_cmp']     = V_cmp
-        opt['lag']       = [p1,p2]
-        opt['filter']    = filter_p
+        opt['lag']       = lag
         opt['p']         = [p1,p2]
+        opt['filter_f']  = filter_f
+        opt['f']         = [f1,f2]
         opt['ctype']     = ctype
         opt['norm']      = norm
         opt['norm_tr']   = norm_tr
@@ -263,8 +274,13 @@ class c1_md :
         maxlat = 89
         minlon = -180
         maxlon = 180
-        dl_lat=abs(max(lat) - min(lat))*0.05
-        dl_lon=abs(max(lon) - min(lon))*0.05
+        dl_lat=abs(max(lat) - min(lat))*0.1
+        dl_lon=abs(max(lon) - min(lon))*0.1
+
+        dl_tmp = max([dl_lon,dl_lat])
+        dl_lat = dl_tmp
+        dl_lon = dl_tmp
+
         dl     = 0.01
         if min(lat) - dl_lat > minlat: minlat = min(lat) - dl_lat
         if max(lat) + dl_lat < maxlat: maxlat = max(lat) + dl_lat
@@ -285,7 +301,8 @@ class c1_md :
             res = 2
             ax.coastlines('110m')
         ax.add_image(Stamen('terrain-background'),res)
-        ax.gridlines(draw_labels=True)
+        ax.gridlines(draw_labels=False)
+
         if idvr[0]=='all':
             for ista in range(0,len(lat)):
                 ax.plot(lon[ista],lat[ista], "o", color=color_vr, 
@@ -519,8 +536,10 @@ class c1_md :
             else:
                 d   = self.read_c1_for_path(id1,id2,I_cmp=icmp,I_date = opt['iddate'])[0]
             if d!=[]:
-                if opt['filter'] and len(opt['p'])==2:
+                if opt['filter_p'] and len(opt['p'])==2:
                     d.filter(opt['p'][0],opt['p'][1])
+                if opt['filter_f'] and len(opt['f'])==2:
+                    d.filter(1./opt['f'][1],1./opt['f'][0])
                 if opt['ctype']=='NP':trace = d.tr
                 if opt['ctype']=='N' :trace = d.split_ca()['N']['trace']
                 if opt['ctype']=='P' :trace = d.split_ca()['P']['trace']
@@ -562,8 +581,10 @@ class c1_md :
             else:
                 d   = self.read_c1_for_path(id1,id2,I_cmp=opt['icmp'],I_date = opt['iddate'])[0]
             if d!=[]:
-                if opt['filter'] and len(opt['p'])==2:
+                if opt['filter_p'] and len(opt['p'])==2:
                     d.filter(opt['p'][0],opt['p'][1])
+                if opt['filter_f'] and len(opt['f'])==2:
+                    d.filter(1./opt['f'][1],1./opt['f'][0])
                 if opt['ctype']=='NP':trace = d.tr
                 if opt['ctype']=='N' :trace = d.split_ca()['N']['trace']
                 if opt['ctype']=='P' :trace = d.split_ca()['P']['trace']
@@ -590,7 +611,12 @@ class c1_md :
         ax0.grid(True)
         ax0.set_ylim(0.5,len(cch)+0.5)
         ax0.set_xlim(-lag,+lag)
-        ax0.set_title(d.title + ' -- filter: ' + str(p1) + '- ' + str(p2) + ' s')
+        if opt['filter_p']:
+            ax0.set_title(d.title + ' -- filter: ' + str(p1) + '- ' + str(p2) + ' s')
+        elif opt['filter_f']:
+            ax0.set_title(d.title + ' -- filter: ' + str(f1) + '- ' + str(f2) + ' hz')
+        else:
+            ax0.set_title(d.title + ' -- no filter')
         self.plot_station_map(map_show=0,ax=ax_map,idvs=[id1],idvr=[id2])
         plt.show()
 
@@ -604,8 +630,14 @@ class c1_md :
         else : title = 'average'
         if self.rtz: ccmp = self.in_rot['cc_cmp'][opt['icmp']].decode('utf8')
         else:ccmp = self.in_['cc_cmp'][opt['icmp']].decode('utf8')
-        ax.set_title(title + ' -- ' + ccmp + 
-            ' -- filter: ' + str(opt['p'][0]) + '- ' + str(opt['p'][1]) + ' s')
+        if opt['filter_p']:
+            ax.set_title(title + ' -- ' + ccmp + 
+                ' -- filter: ' + str(opt['p'][0]) + '- ' + str(opt['p'][1]) + ' s')
+        elif opt['filter_f']:
+            ax.set_title(title + ' -- ' + ccmp + 
+                ' -- filter: ' + str(opt['f'][0]) + '- ' + str(opt['f'][1]) + ' hz')
+        else:
+            ax.set_title(title + ' -- ' + ccmp + ' -- no filter')
         ax.set_xlabel('Time (' + opt['time_unit'] + ')')
         ax.set_ylabel('Distance (' + opt['dist_unit'] + ')' )
         if opt['save_plot']:

@@ -182,7 +182,12 @@ def xcorr_from_station_list_multi_path(inu,station_file,fe,cut_len) :
         ff=open(station_file[iii],"r")
         lines=ff.readlines()
         db[iset]=dict()
-        db[iset]['in_']={'tag' : 'set_0','pp' :{'cut_len' :cut_len}}
+        set_=iset.split('/')
+        if set_[-1]=='':
+            set_name=set_[-2]
+        else:
+            set_name=set_[-1]
+        db[iset]['in_']={'tag' : set_name,'pp' :{'cut_len' :cut_len}}
         db[iset]['sta']=dict()
         for iline in lines:
             cline=iline.split(' ')
@@ -912,7 +917,7 @@ def cts_read_data(h5_file,id_,ch,nset) :
             h5_node  ='/'+aa[0]+'/'+aa[1]+'.'+aa[2]+'/'+icmp
             dest_key=iid.decode('utf8')+'.'+icmp
             if h5_node in  h5_file  :
-                noise_data[dest_key]=h5_file[h5_node][:]
+                noise_data[dest_key]=h5_file[h5_node][:].flatten()
     return noise_data
 
 
