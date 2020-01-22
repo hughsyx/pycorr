@@ -113,8 +113,9 @@ class c1_md :
         opt = {}
         opt['file_name']    = file_name
         opt['icmp']         = icmp
+        opt['filter_p']     = filter_p
         opt['p']            = [p1,p2]
-        opt['filter_f']      = filter_f
+        opt['filter_f']     = filter_f
         opt['f']            = [f1,f2]
         opt['ctype']        = ctype
         opt['save']         = save
