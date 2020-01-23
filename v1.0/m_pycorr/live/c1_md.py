@@ -749,9 +749,10 @@ class c1_md :
             #dist  = np.mean(dist)
             delay    = vdist*u
             delta = np.zeros((int(max_delay/self.md_c['tau']*2+1),data.shape[1]))
-            for idx,tr in enumerate(data.transpose()):
-                delta[delta.shape[0]/2 - np.round(delay[idx]/self.md_c['tau']).astype('int') ,idx] = 1.
-                bdata[:,idx]=signal.fftconvolve(tr, delta[:,idx], mode='same')
+            if data.any():
+                for idx,tr in enumerate(data.transpose()):
+                    delta[np.round(delta.shape[0]/2).astype('int')  - np.round(delay[idx]/self.md_c['tau']).astype('int') ,idx] = 1.
+                    bdata[:,idx]=signal.fftconvolve(tr, delta[:,idx], mode='same')
         norm_value = float(len(np.where(np.max(bdata,axis=0))[0]))
         if norm_value == 0. : norm_value =1.
         if opt['slant_stack']['sum']['type'] == 'pws':
