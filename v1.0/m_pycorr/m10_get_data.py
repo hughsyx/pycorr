@@ -633,13 +633,19 @@ def write_as_hdf5(out_file,st,ista,icmp) :
     loc = st[0].stats.location
     if loc == u'':
         loc  = '00' 
+    if icmp=='1':
+        dd.dispc('      renaming cmp 1 to N','c','d')
+        icmp='N'
+    if icmp=='2':
+        dd.dispc('      renaming cmp 2 to E','c','d')
+        icmp='E'
     dset_name = "/" + ista['net']+"/"+ista['name']+"."+loc+"/"+icmp
     trace = np.float32(st[0].data)
     fout = h5.File(out_file, "a") #on le sort de la boucle ...
     if dset_name in fout : # should not happen normally except if the coda hb interrupted
         del fout[dset_name]
     dset = fout.create_dataset(dset_name, data=trace,chunks=True,compression="gzip", compression_opts=9)
-    fout.close ()
+    fout.close()
 
 
 #----------------------------------------
