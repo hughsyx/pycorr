@@ -805,8 +805,8 @@ def ml_stack_and_write_this_set_in_hdf5(in_,md_c,kset) :
                 stack_data = np.sum(ff_cc['/cc'+dset_name],axis=0)     
             if ref_nstack[icmp,ipath] :
                 stack_data = stack_data/ref_nstack[icmp,ipath]
-            if stack_data.any():
-                h5_create_dataset(ff,'/ref'+dset_name,stack_data,in_['gzip'],in_['cc_dtype'])
+            #if stack_data.any():
+            h5_create_dataset(ff,'/ref'+dset_name,stack_data,in_['gzip'],in_['cc_dtype'])
         
     #copy daily correlations from the temporary to the final h5 file if necessary: 
     if in_['keep_daily_corr'] :
