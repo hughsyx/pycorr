@@ -633,13 +633,19 @@ def write_as_hdf5(out_file,st,ista,icmp) :
     loc = st[0].stats.location
     if loc == u'':
         loc  = '00' 
+    if icmp=='1':
+        dd.dispc('      renaming cmp 1 to N','c','d')
+        icmp='N'
+    if icmp=='2':
+        dd.dispc('      renaming cmp 2 to E','c','d')
+        icmp='E'
     dset_name = "/" + ista['net']+"/"+ista['name']+"."+loc+"/"+icmp
     trace = np.float32(st[0].data)
     fout = h5.File(out_file, "a") #on le sort de la boucle ...
     if dset_name in fout : # should not happen normally except if the coda hb interrupted
         del fout[dset_name]
     dset = fout.create_dataset(dset_name, data=trace,chunks=True,compression="gzip", compression_opts=9)
-    fout.close ()
+    fout.close()
 
 
 #----------------------------------------
@@ -852,7 +858,7 @@ def process_trace(st,pp,t1,t2) :
         st.filter('bandpass',freqmin=f_prefilt[0],freqmax=f_prefilt[1],zerophase=True) 
         st.trim(starttime=t1-tap_len,endtime=t2+tap_len,fill_value=0,pad=True)
         st.interpolate(newfreq,starttime=t1,npts=int(theo_npts*newfreq),method='cubic')
-    elif L/float((newfreq*Ltrace)) > 0.20:
+    elif L/float((newfreq*Ltrace)) > 0.01:
         st.taper(100,max_length=600)
         if remove_resp:
             st.remove_response(output="VEL",taper = False, water_level = 60.0)
@@ -938,7 +944,12 @@ def glitchCorrectionWithFactorStd(Trace, FactorTestStd, NumberOfStd = 1, FactorR
 
 def initialize_client(data_center,db) :
     try :
-        client = obspy.clients.fdsn.Client(data_center,user=db['user_id'],password=db['password'])
+        if data_center=='IRISPH5':
+            dd.dispc('  IRISPH5 ...','b','n')
+            DATASELECT="http://service.iris.edu/ph5ws/dataselect/1"
+            client = obspy.clients.fdsn.Client(service_mappings={'dataselect': DATASELECT})
+        else:
+            client = obspy.clients.fdsn.Client(data_center,user=db['user_id'],password=db['password'])
     except : 
         client = False
         dd.dispc('  data center ' + data_center + ' cannot be reach','r','n')

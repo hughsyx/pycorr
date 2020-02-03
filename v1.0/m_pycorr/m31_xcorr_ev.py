@@ -60,6 +60,50 @@ def xcorr_all_ev(inu) :
     ex = xcorr_ev(inu,db,db[[*db][0]]['in_']['pp']['freq'])
     main_loop_ev(ex)
     
+def xcorr_from_station_and_event_list(inu,station_file,event_file,fe,cut_len) :
+    ''' quickly written. To be done properly later'''
+    db={}
+    ff=open(station_file,"r")
+    lines=ff.readlines()
+    ff_ev=open(event_file,"r")
+    lines_ev=ff_ev.readlines()     
+    for iset in inu['path']:
+        db[iset]=dict()
+        db[iset]['in_']={'tag' : 'set_0','pp' :{'cut_len' :cut_len}}
+        db[iset]['sta']=dict()
+        db[iset]['ev']=dict()   
+        for iline in lines:
+            cline=iline.split(' ')
+            if cline[3]=='--':
+                kname=cline[1]+'_'+cline[2]+'_00'
+            else:
+                kname=cline[1]+'_'+cline[2]+'_'+cline[3]
+            db[iset]['sta'][kname]={}
+            db[iset]['sta'][kname]['name'] = cline[2]
+            db[iset]['sta'][kname]['lat']  = float(cline[4])
+            db[iset]['sta'][kname]['lon']  = float(cline[5])
+            db[iset]['sta'][kname]['elev'] = float(cline[6])
+            db[iset]['sta'][kname]['depth']= float(cline[7])
+            db[iset]['sta'][kname]['dc']   = cline[0]
+            db[iset]['sta'][kname]['net']  = cline[1]
+            db[iset]['sta'][kname]['loc']  = cline[3] #string !
+            db[iset]['sta'][kname]['kname']= kname
+        for iline in lines_ev:
+            cline=iline.split(' ')
+            kname=cline[0] + '_' + cline[-1].split('\n')[0] + '_' + cline[-4]
+            db[iset]['ev'][kname]={}
+            db[iset]['ev'][kname]['date']    = cline[0]
+            db[iset]['ev'][kname]['ev_id']   = kname.replace(':','-')
+            db[iset]['ev'][kname]['lat']     = float(cline[3])
+            db[iset]['ev'][kname]['lon']     = float(cline[6])
+            db[iset]['ev'][kname]['depth']   = float(cline[9])
+            db[iset]['ev'][kname]['mag']     = float(cline[-4])
+            db[iset]['ev'][kname]['mag_type']= cline[-1].split('\n')[0] 
+    ff.close()
+    ff_ev.close()
+    ex=xcorr_ev(inu,db,fe)
+    main_loop_ev(ex)
+
 
 def xcorr_ev(inu,db,fe) : 
     '''ex contain the following dict : 
@@ -74,6 +118,7 @@ def xcorr_ev(inu,db,fe) :
     in_['date']              = [1504846160.0,1279925473.0]
     in_['start_time']        = 1000 # start correlating n sec afetr source time 
     in_['time_win']          = 1000 # time window to correlate in sec
+    in_['time_overlap']      = 0 # amount of overlap between windows (s) 
     in_['cc_maxlag']         = 600           # [s] 
     in_['cc_cmp']            = ['ZZ']        # list des channels a correler. 
     in_['cc_func']           = 'ctp_xcorr_norm'
@@ -88,6 +133,10 @@ def xcorr_ev(inu,db,fe) :
     in_['pws']               = False  # default = linear stack
     in_['pws_timegate']      = 25.
     in_['pws_power']         = 2.
+    in_['svd_wiener2']       = False # apply svd-wiener2 filter before stacking Moreau et al. 2017 (GJI)
+    in_['svd_wiener2_m']     = 20 # date axis, number of point for wiener window 
+    in_['svd_wiener2_n']     = 20 # time lag axis, number of point for wiener window
+    in_['svd_wiener2_nvs']   = None # number of singular value to keep, None will keep only singular values > 10% min value    
     in_['remove_event_file'] = True  # rm or not daily files (keep them for debugging or if you plan to add dates
     in_['pp']                = []  #['_comb_filter']# list of pre-processing to be applied 
     in_['pp_args']           = []  #[{'p1' :[1,5,10,20,40], 'p2' : [5,10,20,40,80]} ]
@@ -325,6 +374,8 @@ def correlate_this_set_ev(in_,md_c,kset) :
                         dset_name=h5_get_station_pair_tree_path(kcpl,kcmp)
                         if in_['pws']:
                             h5_create_dataset(h5_daily,'/cc'+dset_name,pws(cc_hr,in_['pws_timegate'],in_['pws_power'],1/float(md_c['tau']),in_['cc_dtype']),in_['gzip'],in_['cc_dtype'])
+                        elif in_['svd_wiener2']:
+                            h5_create_dataset(h5_daily,'/cc'+dset_name,svd_wiener2(cc_hr,in_['svd_wiener2_m'],in_['svd_wiener2_n'],in_['svd_wiener2_nvs'],in_['cc_dtype']),in_['gzip'],in_['cc_dtype'])           
                         else :
                             h5_create_dataset(h5_daily,'/cc'+dset_name,cc_hr.sum(axis=0),in_['gzip'],in_['cc_dtype'])
                     if not(in_['event_stack']):
@@ -392,11 +443,15 @@ def ex_get_md_c_ev(db,in_,fe) :
 
             time['npts'] =int(time['fe']*(time['t2']))          #
             time['time']= np.arange(time['t1'],time['t2'],1.0/time['fe'])   # in second w.r to midnight
-            
-            hr1 = np.arange(in_['start_time'],time['t2']-in_['time_win'],in_['time_win'])/3600.
-            hr2 = np.arange(in_['start_time']+in_['time_win'],time['t2'],in_['time_win'])/3600.
-            ds1=np.array(hr1)*3600 # difference de temps [s]
-            ds2=np.array(hr2)*3600 # entre chaque fen et le t1 des traces
+                    
+            hr1 = np.arange(in_['start_time'],time['t2']-in_['time_win'],in_['time_win']-in_['time_overlap'])         
+            hr2 = hr1+in_['time_win']
+
+            #hr1 = np.arange(in_['start_time'],time['t2']-in_['time_win'],in_['time_win'])/3600.
+            #hr2 = np.arange(in_['start_time']+in_['time_win'],time['t2'],in_['time_win'])/3600.
+
+            ds1=np.array(hr1) # difference de temps [s]
+            ds2=np.array(hr2) # entre chaque fen et le t1 des traces
 
             #keep the indice of each hourly slice :
             md_c[iset][ev]['I1']=np.round(ds1*time['fe']).astype('int')                 # idem ms en nb de points
@@ -413,8 +468,8 @@ def ex_get_md_c_ev(db,in_,fe) :
                     md_c[iset][ev]['date2'].append((UTCDateTime(idate)+time['t2']).timestamp)
             if not in_['event_stack'] :
                 for ihr in range(0,len(hr1)) :
-                    md_c[iset][ev]['date1'].append((UTCDateTime(idate)+(hr1[ihr]*3600)).timestamp)
-                    md_c[iset][ev]['date2'].append((UTCDateTime(idate)+(hr2[ihr]*3600)).timestamp)
+                    md_c[iset][ev]['date1'].append((UTCDateTime(idate)+(hr1[ihr])).timestamp)
+                    md_c[iset][ev]['date2'].append((UTCDateTime(idate)+(hr2[ihr])).timestamp)
             md_c['date1'].extend(k for k in md_c[iset][ev]['date1'][:])
             md_c['date2'].extend(k for k in md_c[iset][ev]['date2'][:])
     md_c['date1'].sort()
@@ -562,6 +617,8 @@ def ml_stack_and_write_this_set_in_hdf5_ev(in_,md_c,kset) :
             dset_name=h5_get_station_pair_tree_path(kset['md']['id'][ipath],in_['cc_cmp'][icmp])
             if in_['pws']:
                 stack_data = pws(ff_cc['/cc'+dset_name],in_['pws_timegate'],in_['pws_power'],1/float(md_c['tau']),in_['cc_dtype'])
+            elif in_['svd_wiener2']:
+                stack_data = svd_wiener2(ff_cc['/cc'+dset_name],in_['svd_wiener2_m'],in_['svd_wiener2_n'],in_['svd_wiener2_nvs'],in_['cc_dtype'])
             else:
                 stack_data = np.sum(ff_cc['/cc'+dset_name],axis=0)     
             if ref_nstack[icmp,ipath] :
