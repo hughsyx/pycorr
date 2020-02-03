@@ -8,9 +8,9 @@ Ambient seismic noise correlation package
 - retrieve waveforms from FDSN-webservices and/or personal archive
 - basic processing "on the fly": decimation, sensor response, gaps ...
 - possible (pre-) processing before correlation
-- xcorr
-- tensor rotation
-- and more ...
+- xcorr with flexible parameters for optimized tomography and/or monitoring applications
+- tensor rotation to retrieve RT information
+- Basic toolbox to extract and plot correlations results from large output
 
 # recommended install
 
@@ -26,7 +26,7 @@ conda install h5py
 conda install ipdb  
 conda install cartopy   
 conda install statsmodels  
-onda install scikit-learn  
+conda install scikit-learn  
 
 conventional installation of obpsy :  
 conda install obspy  
@@ -36,7 +36,7 @@ git clone https://github.com/obspy/obspy.git
 pip install /home/bouep/DATA/obspy  
 
 
-set your python path :  
+set your python path 
 export PYTHONPATH=".../pycorr/v1.0:$PYTHONPATH"
 
 
