@@ -170,7 +170,7 @@ def mmap(lon=[2.39,5.72],lat=[47.08,45.18],depth=[10,10],mag=[5,10],filename='ev
     gl = ax.gridlines(draw_labels=True,linewidth=0.5, color='gray', alpha=0.5)
     gl.xlabels_top   = False
     gl.ylabels_right = False
-    sc = plt.scatter(lon, lat, c=np.array(depth)/1000, s=np.array(mag)**2.5,transform=ccrs.Geodetic(),cmap='plasma_r',alpha=0.5)
+    sc = plt.scatter(lon, lat, c=np.array(depth)/1000, s=np.array(mag)**1.5,transform=ccrs.Geodetic(),cmap='plasma_r',alpha=0.5)
     cb = plt.colorbar(sc)
     cb.set_label('Depth (km)')
     plt.savefig(filename,dpi=150, facecolor='w', edgecolor='w',

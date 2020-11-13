@@ -643,7 +643,7 @@ class c1_md :
         ax.set_ylabel('Distance (' + opt['dist_unit'] + ')' )
         if opt['save_plot']:
             mkdir(os.path.dirname(opt['file_name']))
-            plt.savefig(opt['file_name'],dpi=None, facecolor='w', edgecolor='w',
+            plt.savefig(opt['file_name'],dpi=150, facecolor='w', edgecolor='w',
             orientation='portrait', papertype=None, format=None, 
             transparent=False, bbox_inches='tight', pad_inches=0.1,
             frameon=None)

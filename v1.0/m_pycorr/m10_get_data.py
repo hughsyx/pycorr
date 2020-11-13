@@ -300,11 +300,11 @@ def download(input_user={}):
         md   = load_metadata(path['metadata_pkl'])
         md   = core_download(in_,db,md,path,cday,cday+86400.0)        
         #exiting this day  : write metadata + remove lock file + create a _day_001.done file
-        try :
+        #try :
             #h5py bug : can crash when appending an existing file :
-            write_metadata_hdf5(path['h5_file'],db['in_'],cday,sta=db['sta'])
-        except  : 
-            pass
+        write_metadata_hdf5(path['h5_file'],db['in_'],cday,sta=db['sta'])
+        #except  : 
+        #    pass
         filename = path['metadata_pkl']
         ff       = open(path['metadata_pkl'],'wb')
         pickle.dump(md,ff)
@@ -662,7 +662,10 @@ def write_metadata_hdf5(out_file,in_,cday,sta={},ev={}) :
         if '/_metadata/sta' not in fout:
             for key in sta:
                 for kkey in sta[key]:
-                    idsta = sta[key]['net'] + '/' + sta[key]['name'] + '.' + sta[key]['loc'] 
+                    locid = sta[key]['loc']
+                    if locid is '':
+                        locid = '00'
+                    idsta = sta[key]['net'] + '/' + sta[key]['name'] + '.' + locid 
                     if idsta in fout:
                         fout.create_dataset('/_metadata/sta/' + idsta  + '/' +kkey, data=sta[key][kkey])  
     if ev is not {}:

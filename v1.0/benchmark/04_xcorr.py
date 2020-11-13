@@ -79,7 +79,7 @@ in_['cc_tags']           = 3 # 1 : xcorr only intra-tag data,2 : xcorr only inte
 #       - short time window correlation table (cc) for monitoring, IF "keep_daily_corr" is switched to True
 # Daily (temporary) files can also be kept using "remove_daily_file" option.
 in_['hr_stack']          = False  # If True, keep only one corr per day and not smaller time windows (see hr1, hr2)
-in_['keep_daily_corr']   = False   # If True, keep daily(/or smaller time window) correlations in the concatenated final file
+in_['keep_daily_corr']   = True   # If True, keep daily(/or smaller time window) correlations in the concatenated final file
 in_['remove_daily_file'] = False   # If True, remove daily files, and keep only the concatenated keep them for debugging or if you plan to add dates
 ## Phase weighted stacks?
 in_['pws']               = True # apply pws() instead of mean()
