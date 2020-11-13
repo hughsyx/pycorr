@@ -13,6 +13,7 @@ import numpy as np
 import scipy.fftpack
 import scipy.io as io
 import scipy.signal as signal
+import scipy.linalg as linalg
 import random
 import h5py
 import glob
@@ -173,31 +174,67 @@ def xcorr_from_firecore_station_list(inu,station_file,fe,cut_len) :
     main_loop(ex) 
 
 
+def xcorr_from_station_list_multi_path(inu,station_file,fe,cut_len) :
+    ''' quickly written. To be done properly later'''
+    #station_file is a list in the sme order as path
+    db={}
+    for iii,iset in enumerate(inu['path']):
+        ff=open(station_file[iii],"r")
+        lines=ff.readlines()
+        db[iset]=dict()
+        set_=iset.split('/')
+        if set_[-1]=='':
+            set_name=set_[-2]
+        else:
+            set_name=set_[-1]
+        db[iset]['in_']={'tag' : set_name,'pp' :{'cut_len' :cut_len}}
+        db[iset]['sta']=dict()
+        for iline in lines:
+            cline=iline.split(' ')
+            if cline[3]=='--':
+                kname=cline[1]+'_'+cline[2]+'_00'
+            else:
+                kname=cline[1]+'_'+cline[2]+'_'+cline[3]
+            db[iset]['sta'][kname]={}
+            db[iset]['sta'][kname]['name'] = cline[2]
+            db[iset]['sta'][kname]['lat']  = float(cline[4])
+            db[iset]['sta'][kname]['lon']  = float(cline[5])
+            db[iset]['sta'][kname]['elev'] = float(cline[6])
+            db[iset]['sta'][kname]['depth']= float(cline[7])
+            db[iset]['sta'][kname]['dc']   = cline[0]
+            db[iset]['sta'][kname]['net']  = cline[1]
+            db[iset]['sta'][kname]['loc']  = cline[3] #string !
+            db[iset]['sta'][kname]['kname']= kname 
+        ff.close()
+    ex=xcorr(inu,db,fe)
+    main_loop(ex)
+
 
 def xcorr_from_station_list(inu,station_file,fe,cut_len) :
     ''' quickly written. To be done properly later'''
     db={}
     ff=open(station_file,"r")
     lines=ff.readlines()
-    db[inu['path'][0]]=dict()
-    db[inu['path'][0]]['in_']={'tag' : 'set_0','pp' :{'cut_len' :cut_len}}
-    db[inu['path'][0]]['sta']=dict()
-    for iline in lines:
-        cline=iline.split(' ')
-        if cline[3]=='--':
-            kname=cline[1]+'_'+cline[2]+'_00'
-        else:
-            kname=cline[1]+'_'+cline[2]+'_'+cline[3]
-        db[inu['path'][0]]['sta'][kname]={}
-        db[inu['path'][0]]['sta'][kname]['name'] = cline[2]
-        db[inu['path'][0]]['sta'][kname]['lat']  = float(cline[4])
-        db[inu['path'][0]]['sta'][kname]['lon']  = float(cline[5])
-        db[inu['path'][0]]['sta'][kname]['elev'] = float(cline[6])
-        db[inu['path'][0]]['sta'][kname]['depth']= float(cline[7])
-        db[inu['path'][0]]['sta'][kname]['dc']   = cline[0]
-        db[inu['path'][0]]['sta'][kname]['net']  = cline[1]
-        db[inu['path'][0]]['sta'][kname]['loc']  = cline[3] #string !
-        db[inu['path'][0]]['sta'][kname]['kname']= kname 
+    for iset in inu['path']:
+        db[iset]=dict()
+        db[iset]['in_']={'tag' : 'set_0','pp' :{'cut_len' :cut_len}}
+        db[iset]['sta']=dict()
+        for iline in lines:
+            cline=iline.split(' ')
+            if cline[3]=='--':
+                kname=cline[1]+'_'+cline[2]+'_00'
+            else:
+                kname=cline[1]+'_'+cline[2]+'_'+cline[3]
+            db[iset]['sta'][kname]={}
+            db[iset]['sta'][kname]['name'] = cline[2]
+            db[iset]['sta'][kname]['lat']  = float(cline[4])
+            db[iset]['sta'][kname]['lon']  = float(cline[5])
+            db[iset]['sta'][kname]['elev'] = float(cline[6])
+            db[iset]['sta'][kname]['depth']= float(cline[7])
+            db[iset]['sta'][kname]['dc']   = cline[0]
+            db[iset]['sta'][kname]['net']  = cline[1]
+            db[iset]['sta'][kname]['loc']  = cline[3] #string !
+            db[iset]['sta'][kname]['kname']= kname 
     ff.close()
     ex=xcorr(inu,db,fe)
     main_loop(ex)
@@ -282,6 +319,10 @@ def xcorr(inu,db,fe) :
     in_['pws']               = False  # default = linear stack
     in_['pws_timegate']      = 25.
     in_['pws_power']         = 2.
+    in_['svd_wiener2']       = False # apply svd-wiener2 filter before stacking Moreau et al. 2017 (GJI)
+    in_['svd_wiener2_m']     = 20 # date axis, number of point for wiener window 
+    in_['svd_wiener2_n']     = 20 # time lag axis, number of point for wiener window
+    in_['svd_wiener2_nvs']   = None # number of singular value to keep, None will keep only singular values > 10% min value    
     in_['remove_daily_file'] = True  # rm or not daily files (keep them for debugging or if you plan to add dates
     in_['pp']                = []  #['_comb_filter']# list of pre-processing to be applied 
     in_['pp_args']           = []  #[{'p1' :[1,5,10,20,40], 'p2' : [5,10,20,40,80]} ]
@@ -515,6 +556,8 @@ def correlate_this_set(in_,md_c,kset) :
                         dset_name=h5_get_station_pair_tree_path(kcpl,kcmp)
                         if in_['pws']:
                             h5_create_dataset(h5_daily,'/cc'+dset_name,pws(cc_hr,in_['pws_timegate'],in_['pws_power'],1/float(md_c['tau']),in_['cc_dtype']),in_['gzip'],in_['cc_dtype'])
+                        elif in_['svd_wiener2']:
+                            h5_create_dataset(h5_daily,'/cc'+dset_name,svd_wiener2(cc_hr,in_['svd_wiener2_m'],in_['svd_wiener2_n'],in_['svd_wiener2_nvs'],in_['cc_dtype']),in_['gzip'],in_['cc_dtype'])           
                         else :
                             h5_create_dataset(h5_daily,'/cc'+dset_name,cc_hr.sum(axis=0),in_['gzip'],in_['cc_dtype'])
                     if not(in_['hr_stack']):  
@@ -756,11 +799,14 @@ def ml_stack_and_write_this_set_in_hdf5(in_,md_c,kset) :
             dset_name=h5_get_station_pair_tree_path(kset['md']['id'][ipath],in_['cc_cmp'][icmp])
             if in_['pws']:
                 stack_data = pws(ff_cc['/cc'+dset_name],in_['pws_timegate'],in_['pws_power'],1/float(md_c['tau']),in_['cc_dtype'])
+            elif in_['svd_wiener2']:
+                stack_data = svd_wiener2(ff_cc['/cc'+dset_name],in_['svd_wiener2_m'],in_['svd_wiener2_n'],in_['svd_wiener2_nvs'],in_['cc_dtype'])
             else:
                 stack_data = np.sum(ff_cc['/cc'+dset_name],axis=0)     
             if ref_nstack[icmp,ipath] :
                 stack_data = stack_data/ref_nstack[icmp,ipath]
-            h5_create_dataset(ff,'/ref'+dset_name,stack_data,in_['gzip'],in_['cc_dtype'])
+            if stack_data.any():
+                h5_create_dataset(ff,'/ref'+dset_name,stack_data,in_['gzip'],in_['cc_dtype'])
         
     #copy daily correlations from the temporary to the final h5 file if necessary: 
     if in_['keep_daily_corr'] :
@@ -817,6 +863,34 @@ def pws(data,timegate,power,fe,frmt) :
 #        stack += c * trace
 #    return stack
 
+def svd_wiener2(data,m,n,nvs=None,frmt='float32') :
+    if len(data.shape)==1:
+        return signal.wiener(data, mysize=n).astype(frmt)
+    else:
+        [U,S,V] = linalg.svd(data)
+        if nvs is not None:
+            if nvs > min(data.shape):
+                nvs=min(data.shape)
+        else:
+            #Sdiff2 = np.abs(np.diff(np.diff(20*np.log10(S/max(S)))))
+            #nvs = np.where(Sdiff2==max(Sdiff2))[0][0]
+            nvs = len(np.where(20*np.log10(S/max(S))>0.1*min(20*np.log10(S/max(S))))[0])
+        Xwiener = np.zeros(data.shape)
+        for kk in range(int(nvs)):
+            X = S[kk]*np.outer(U[:,kk],V[kk,:])
+            Xwiener = signal.wiener(X, mysize=[m,n]) + Xwiener
+        return signal.wiener(Xwiener, mysize=[5,5]).mean(axis=0).astype(frmt)
+
+def mplot(data) :
+    import matplotlib.pyplot as plt
+    if len(data.shape)==2:
+        plt.matshow(data);
+        plt.colorbar()
+    else: 
+        plt.plot(data)
+    plt.gca().set_aspect('auto', adjustable='box')
+    plt.show()
+
 
 #-----------------------------------------------------------------------------
 #                       correlate_this_set subfunctions 
@@ -844,7 +918,7 @@ def cts_read_data(h5_file,id_,ch,nset) :
             h5_node  ='/'+aa[0]+'/'+aa[1]+'.'+aa[2]+'/'+icmp
             dest_key=iid.decode('utf8')+'.'+icmp
             if h5_node in  h5_file  :
-                noise_data[dest_key]=h5_file[h5_node][:]
+                noise_data[dest_key]=h5_file[h5_node][:].flatten()
     return noise_data
 
 
@@ -1131,13 +1205,16 @@ def h5_copy_dict_to_group(dict_,h5,prefix=''):
             if type(dset)==list and len(dset) > 0 and type(dset[0]) == dict :
                     h5_copy_dict_to_group({dname : dset[0]},h5,prefix='/'+ikey)
             else :
-                if type(dset)==list and len(dset) > 0 and isinstance(dset[0],str):
-                    dset_tmp = []
-                    for mot in dset:
-                        dset_tmp.append(mot.encode())
-                    h5.create_dataset(prefix+'/'+ikey+'/'+dname,data=dset_tmp)
-                else:                    
-                    h5.create_dataset(prefix+'/'+ikey+'/'+dname,data=dset)
+                try:
+                    if type(dset)==list and len(dset) > 0 and isinstance(dset[0],str):
+                        dset_tmp = []
+                        for mot in dset:
+                            dset_tmp.append(mot.encode())
+                        h5.create_dataset(prefix+'/'+ikey+'/'+dname,data=dset_tmp)
+                    else:                    
+                        h5.create_dataset(prefix+'/'+ikey+'/'+dname,data=dset)
+                except:
+                    h5.create_dataset(prefix+'/'+ikey+'/'+dname,data='None')
     return h5 
 
 

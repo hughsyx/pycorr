@@ -52,7 +52,7 @@ in_ = {}
 in_['path']              = ['./data_1.0hz_cooked/daily/glob'] # list of path to correlate ['../daily/tag1,', '../daily/tag2']
 in_['path_out']          = './' # output path
 in_['tag']               = 'glob_conti' # output label (opt)
-in_['file_size']         = 1. # [Gb] maximum size of each final h5 file, an good way to increase parallelization 
+in_['file_size']         = 0.03 # [Gb] maximum size of each final h5 file, an good way to increase parallelization 
 
 ############## DATES
 date1 = int(UTCDateTime(2018,4,16,0,0,0).timestamp) # from 
@@ -78,13 +78,20 @@ in_['cc_tags']           = 3 # 1 : xcorr only intra-tag data,2 : xcorr only inte
 #       - (ALWAYS) the stack over the full period (ref)
 #       - short time window correlation table (cc) for monitoring, IF "keep_daily_corr" is switched to True
 # Daily (temporary) files can also be kept using "remove_daily_file" option.
-in_['hr_stack']          = True    # If True, keep only one corr per day and not smaller time windows (see hr1, hr2)
+in_['hr_stack']          = False    # If True, keep only one corr per day and not smaller time windows (see hr1, hr2)
 in_['keep_daily_corr']   = False   # If True, keep daily(/or smaller time window) correlations in the concatenated final file
-in_['remove_daily_file'] = True   # If True, remove daily files, and keep only the concatenated keep them for debugging or if you plan to add dates
+in_['remove_daily_file'] = False   # If True, remove daily files, and keep only the concatenated keep them for debugging or if you plan to add dates
 ## Phase weighted stacks?
-in_['pws']               = True # apply pws() instead of mean()
+in_['pws']               = False # apply pws() instead of mean()
 in_['pws_timegate']      = 120. # pws params see Schimmel and Paulsen 1997
 in_['pws_power']         = 2. # pws params see Schimmel and Paulsen 1997
+
+## svd
+in_['svd_wiener2']       = False # apply svd-wiener2 filter before stacking Moreau et al. 2017 (GJI)
+in_['svd_wiener2_m']     = 20 # date axis, number of point for wiener window 
+in_['svd_wiener2_n']     = 20 # time lag axis, number of point for wiener window
+in_['svd_wiener2_nvs']   = 5 # number of singular value to keep, None will keep only singular values > 10% min value
+
 
 ############## MISC
 
