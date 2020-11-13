@@ -656,7 +656,10 @@ def write_metadata_hdf5(out_file,in_,cday,sta={},ev={}) :
         if '/_metadata/sta' not in fout:
             for key in sta:
                 for kkey in sta[key]:
-                    idsta = sta[key]['net'] + '/' + sta[key]['name'] + '.' + sta[key]['loc'] 
+                    locid = sta[key]['loc']
+                    if locid is '':
+                        locid = '00'
+                    idsta = sta[key]['net'] + '/' + sta[key]['name'] + '.' + locid 
                     if idsta in fout:
                         fout.create_dataset('/_metadata/sta/' + idsta  + '/' +kkey, data=sta[key][kkey])  
     if ev is not {}:
