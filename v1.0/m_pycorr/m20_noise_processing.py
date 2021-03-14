@@ -354,13 +354,13 @@ def _filter(trace,fe,inu={}):
         trace *= signal.tukey(len(trace),in_['taper'])
     dt = 1/float(fe)
     
-    if in_['type'] is 'bp':
+    if in_['type'] == 'bp':
         corner = np.array([in_['f1'],in_['f2']])*2.*dt
         b,a = signal.butter(in_['order'],corner,'bandpass',analog=False,output='ba')
-    if in_['type'] is 'hp':
+    if in_['type'] == 'hp':
         corner = np.array(in_['f2'])*2.*dt
         b,a = signal.butter(in_['order'],corner,'highpass',analog=False,output='ba')
-    if in_['type'] is 'lp':
+    if in_['type'] == 'lp':
         corner = np.array(in_['f1'])*2.*dt
         b,a = signal.butter(in_['order'],corner,'lowpass',analog=False,output='ba')
 

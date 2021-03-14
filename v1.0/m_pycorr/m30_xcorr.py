@@ -641,7 +641,7 @@ def ex_get_md_c(db,in_,fe) :
 
     md_c['version']= 0.9 
     #md_c['t']= np.arange(-in_['cc_maxlag'],in_['cc_maxlag']+md_c['tau'],md_c['tau'])
-    md_c['t'] = np.linspace(-in_['cc_maxlag'],in_['cc_maxlag'],2*in_['cc_maxlag']*1/md_c['tau']+1)
+    md_c['t'] = np.linspace(-in_['cc_maxlag'],in_['cc_maxlag'],int(2*in_['cc_maxlag']*1/md_c['tau']+1))
 
     #add the list of components from in_ : so that it cab be changed later if we rotate the CC : 
     md_c['cmp']=in_['cc_cmp']

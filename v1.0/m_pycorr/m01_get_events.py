@@ -143,9 +143,9 @@ def mmap(lon=[2.39,5.72],lat=[47.08,45.18],depth=[10,10],mag=[5,10],filename='ev
     ax = plt.axes(projection=stamen_terrain.crs)
     minlat = -80
     maxlat = 80
-    minlon = -180
-    maxlon = 180
     dl     = 0.1
+    minlon = -180+dl/2
+    maxlon = 180-dl/2
     r      = int(locations2degrees(min(lat),min(lon),max(lat),max(lon))*111)
     if r < 5000:
         if min(lat) - dl > minlat: minlat = min(lat) - dl
@@ -168,15 +168,14 @@ def mmap(lon=[2.39,5.72],lat=[47.08,45.18],depth=[10,10],mag=[5,10],filename='ev
         ax.coastlines('110m')
     ax.add_image(stamen_terrain,res)
     gl = ax.gridlines(draw_labels=True,linewidth=0.5, color='gray', alpha=0.5)
-    gl.xlabels_top   = False
-    gl.ylabels_right = False
-    sc = plt.scatter(lon, lat, c=np.array(depth)/1000, s=np.array(mag)**1.5,transform=ccrs.Geodetic(),cmap='plasma_r',alpha=0.5)
+    gl.top_labels   = False
+    gl.right_labels = False
+    sc = plt.scatter(lon, lat, c=np.array(depth)/1000, s=np.array(mag)**1.5,transform=ccrs.PlateCarree(),cmap='plasma_r',alpha=0.5)
     cb = plt.colorbar(sc)
     cb.set_label('Depth (km)')
     plt.savefig(filename,dpi=150, facecolor='w', edgecolor='w',
         orientation='portrait', papertype=None, format=None,
-        transparent=False, bbox_inches='tight', pad_inches=0.1,
-        frameon=None)
+        transparent=False, bbox_inches='tight', pad_inches=0.1)
     #plt.show()
     plt.close()
 

@@ -419,7 +419,7 @@ def ex_get_md_c_ev(db,in_,fe) :
     md_c={}
     md_c['version']= 0.9
     md_c['tau']  =1./fe #db[[*db][0]]['in_']['pp']['freq']    #    
-    md_c['t'] = np.linspace(-in_['cc_maxlag'],in_['cc_maxlag'],2*in_['cc_maxlag']*1/md_c['tau']+1)
+    md_c['t'] = np.linspace(-in_['cc_maxlag'],in_['cc_maxlag'],int(2*in_['cc_maxlag']*1/md_c['tau']+1))
     #add the list of components from in_ : so that it cab be changed later if we rotate the CC : 
     md_c['date1']=[]
     md_c['date2']=[]
@@ -735,7 +735,10 @@ def h5_copy_dict_to_group_ev(dict_,h5,prefix=''):
                     for mot in dset:
                         dset_tmp.append(mot.encode())
                     h5.create_dataset(prefix+'/'+ikey+'/'+dname,data=dset_tmp)
-                else:                   
-                    h5.create_dataset(prefix+'/'+ikey+'/'+dname,data=dset)
+                else:
+                    try:                   
+                        h5.create_dataset(prefix+'/'+ikey+'/'+dname,data=dset)
+                    except:
+                        h5.create_dataset(prefix+'/'+ikey+'/'+dname,data=0)
     return h5 
 

@@ -15,7 +15,7 @@ from obspy.core.trace import Trace
 from matplotlib import pyplot as plt
 from matplotlib import dates as md
 from scipy.signal import hanning
-from sklearn.feature_extraction.image import extract_patches as buff
+from sklearn.feature_extraction.image import extract_patches_2d as buff
 from statsmodels import robust
 from obspy.geodetics import gps2dist_azimuth as gps2dist
 from obspy.geodetics import degrees2kilometers
@@ -375,8 +375,8 @@ class Stream(obspy.core.stream.Stream):
             signal[np.isnan(signal)] = 0
 
             # Turn the signal into segments
-            signal = buff(signal, patch_shape=patch_shape,
-                          extraction_step=extraction_step)
+            signal = buff(signal, patch_size=patch_shape,
+                          random_state=extraction_step)
 
             data.append(signal)
         data = np.array(data).transpose([1, 0, 2])
@@ -386,8 +386,8 @@ class Stream(obspy.core.stream.Stream):
         # Extract times.
         times = self.times
         # fs = 1 / ((times[1] - times[0]) * 24 * 3600)
-        times = buff(times, patch_shape=patch_shape,
-                     extraction_step=extraction_step)
+        times = buff(times, patch_size=patch_shape,
+                     random_state=extraction_step)
 
         # Skip the first few segments in order to include the end of the signal
         if batch_size is not None:

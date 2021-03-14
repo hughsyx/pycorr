@@ -273,8 +273,9 @@ class c1_md :
         idsta = list(self.get_station_list()['id'])    
         minlat = -90 
         maxlat = 89
-        minlon = -180
-        maxlon = 180
+        dl     = 0.1
+        minlon = -180+dl/2
+        maxlon = 180-dl/2
         dl_lat=abs(max(lat) - min(lat))*0.1
         dl_lon=abs(max(lon) - min(lon))*0.1
 
@@ -307,15 +308,15 @@ class c1_md :
         if idvr[0]=='all':
             for ista in range(0,len(lat)):
                 ax.plot(lon[ista],lat[ista], "o", color=color_vr, 
-                    markeredgecolor = 'k',markersize=size_vr,transform=ccrs.Geodetic(),alpha=0.5)
+                    markeredgecolor = 'k',markersize=size_vr,transform=ccrs.PlateCarree(),alpha=0.5)
         else:
             for iidvr in idvr:
                 ax.plot(lon[idsta.index(iidvr)],lat[idsta.index(iidvr)], "o", color=color_vr, 
-                    markeredgecolor = 'k',markersize=7,transform=ccrs.Geodetic(),alpha=0.5)
+                    markeredgecolor = 'k',markersize=7,transform=ccrs.PlateCarree(),alpha=0.5)
         if idvs != []:
             for iidvs in idvs:
                 ax.plot(lon[idsta.index(iidvs)],lat[idsta.index(iidvs)], "o", color=color_vs, 
-                    markeredgecolor = 'k',markersize=5,transform=ccrs.Geodetic(),alpha=0.5)
+                    markeredgecolor = 'k',markersize=5,transform=ccrs.PlateCarree(),alpha=0.5)
 
         if map_show==1:
             plt.show()
@@ -645,8 +646,7 @@ class c1_md :
             mkdir(os.path.dirname(opt['file_name']))
             plt.savefig(opt['file_name'],dpi=150, facecolor='w', edgecolor='w',
             orientation='portrait', papertype=None, format=None, 
-            transparent=False, bbox_inches='tight', pad_inches=0.1,
-            frameon=None)
+            transparent=False, bbox_inches='tight', pad_inches=0.1)
         else:plt.show()
         return
 

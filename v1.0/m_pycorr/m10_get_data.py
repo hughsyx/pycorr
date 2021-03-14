@@ -663,7 +663,7 @@ def write_metadata_hdf5(out_file,in_,cday,sta={},ev={}) :
             for key in sta:
                 for kkey in sta[key]:
                     locid = sta[key]['loc']
-                    if locid is '':
+                    if locid == '':
                         locid = '00'
                     idsta = sta[key]['net'] + '/' + sta[key]['name'] + '.' + locid 
                     if idsta in fout:

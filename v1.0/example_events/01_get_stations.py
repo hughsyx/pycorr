@@ -36,10 +36,10 @@ in_['endafter']        = '2018-12-31' # yyyy-mm-dd
 
 ###############  for a circular search :
 
-#in_['lat']             = '45' # center point lat
-#in_['lon']             = '0' # center point lon
-#in_['maxradius']       = '10' # max radius
-#in_['minradius']       = '0' # min radius
+#in_['lat']             = '55' # center point lat
+#in_['lon']             = '-10' # center point lon
+#in_['maxradius']       = '75' # max radius
+#in_['minradius']       = '60' # min radius
 
 ###############  for a rectangular search :
 
