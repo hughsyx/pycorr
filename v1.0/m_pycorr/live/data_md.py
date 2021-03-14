@@ -1,4 +1,5 @@
-import os , glob , h5py, cPickle
+import os , glob , h5py, 
+import _pickle as cPickle
 import numpy as np 
 import m_pycorr.mods.dd as dd 
 import m_pycorr.live.mods.h5 as h5 

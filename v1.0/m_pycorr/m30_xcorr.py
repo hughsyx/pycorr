@@ -641,7 +641,7 @@ def ex_get_md_c(db,in_,fe) :
 
     md_c['version']= 0.9 
     #md_c['t']= np.arange(-in_['cc_maxlag'],in_['cc_maxlag']+md_c['tau'],md_c['tau'])
-    md_c['t'] = np.linspace(-in_['cc_maxlag'],in_['cc_maxlag'],2*in_['cc_maxlag']*1/md_c['tau']+1)
+    md_c['t'] = np.linspace(-in_['cc_maxlag'],in_['cc_maxlag'],int(2*in_['cc_maxlag']*1/md_c['tau']+1))
 
     #add the list of components from in_ : so that it cab be changed later if we rotate the CC : 
     md_c['cmp']=in_['cc_cmp']
@@ -805,8 +805,8 @@ def ml_stack_and_write_this_set_in_hdf5(in_,md_c,kset) :
                 stack_data = np.sum(ff_cc['/cc'+dset_name],axis=0)     
             if ref_nstack[icmp,ipath] :
                 stack_data = stack_data/ref_nstack[icmp,ipath]
-            if stack_data.any():
-                h5_create_dataset(ff,'/ref'+dset_name,stack_data,in_['gzip'],in_['cc_dtype'])
+            #if stack_data.any():
+            h5_create_dataset(ff,'/ref'+dset_name,stack_data,in_['gzip'],in_['cc_dtype'])
         
     #copy daily correlations from the temporary to the final h5 file if necessary: 
     if in_['keep_daily_corr'] :
