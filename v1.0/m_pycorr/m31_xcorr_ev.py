@@ -25,6 +25,7 @@ import m_pycorr.mods.lang as lang
 import m_pycorr.mods.dd as dd
 import m_pycorr.m10_get_data as get_data
 import m_pycorr.m20_noise_processing as noise_processing
+from obspy.geodetics import gps2dist_azimuth as gps2dist
 from m_pycorr.m30_xcorr import *
 
 try : import ipdb 
@@ -104,6 +105,19 @@ def xcorr_from_station_and_event_list(inu,station_file,event_file,fe,cut_len) :
     ex=xcorr_ev(inu,db,fe)
     main_loop_ev(ex)
 
+def xcorr_list_ev(inu) :
+    # load each db file and count the number of station : 
+    db={}
+    inu['date']=[]
+    inu['use_list_xcorr']=True
+    for iset in inu['path']  : 
+        ff = open(iset+'/db.pkl','rb')
+        db[iset] = pickle.load(ff)
+        ff.close()
+        for ev in db[iset]['ev']:
+            inu['date'].append(UTCDateTime(db[iset]['ev'][ev]['date']).timestamp)
+    ex = xcorr_ev(inu,db,db[[*db][0]]['in_']['pp']['freq'])
+    main_loop_ev(ex)
 
 def xcorr_ev(inu,db,fe) : 
     '''ex contain the following dict : 
@@ -141,6 +155,9 @@ def xcorr_ev(inu,db,fe) :
     in_['pp']                = []  #['_comb_filter']# list of pre-processing to be applied 
     in_['pp_args']           = []  #[{'p1' :[1,5,10,20,40], 'p2' : [5,10,20,40,80]} ]
     in_['tag']               = 'test'
+    in_['use_list_xcorr']    = False    # use the list or not , default FALSE (ie compute all)
+    in_['list_xcorr']        = 'list_xcorr.txt'  # list of xcorr to compute format G.RER.00_G.SSB.10\nG.ROCAM.00_G.PAF.00....
+    #in_['use_geo_crit']      = True
 
     in_ = lang.parse_options(in_,inu)
     dd.dd(in_)
@@ -159,6 +176,14 @@ def xcorr_ev(inu,db,fe) :
     ex['in_']=copy.deepcopy(in_)
 
     npath_per_file=ex_determine_npath_per_h5_file_ev(in_,fe) 
+    
+    if in_['use_list_xcorr']: 
+        try:
+            file_list_xcorr = open(in_['list_xcorr'])
+            list_xcorr = file_list_xcorr.read().split('\n')
+        except:
+            dd.dispc('NO List of XCORR named' + in_['list_xcorr'],'r','b')
+            return
 
     #list all station pair and their metadata as list => [md]: 
     for ipath1, kpath1 in enumerate(in_['path']): 
@@ -176,14 +201,28 @@ def xcorr_ev(inu,db,fe) :
             for ista1, ksta1 in enumerate(db[kpath1]['sta']) :
                 for ista2, ksta2 in enumerate(db[kpath2]['sta']) :
                     if (ipath1 == ipath2) and (ista2 < ista1) : continue
-                    md['lat'].append([db[kpath1]['sta'][ksta1]['lat'],db[kpath2]['sta'][ksta2]['lat']])
-                    md['lon'].append([db[kpath1]['sta'][ksta1]['lon'],db[kpath2]['sta'][ksta2]['lon']])
-                    md['elev'].append([db[kpath1]['sta'][ksta1]['elev'],db[kpath2]['sta'][ksta2]['elev']])
-                    md['depth'].append([db[kpath1]['sta'][ksta1]['depth'],db[kpath2]['sta'][ksta2]['depth']])
                     id0 = db[kpath1]['sta'][ksta1]['kname'].replace('_','.')
                     id1 = db[kpath2]['sta'][ksta2]['kname'].replace('_','.')
-                    md['id'].append([id0,id1])
-                    sta_pair.append([ista1, ista2])
+                    addcorr = False
+                    if in_['use_list_xcorr']:
+                        if id0 + '_' + id1 in list_xcorr or id1 + '_' + id0 in list_xcorr:
+                            addcorr = True
+                            print(id0 + '_' + id1)
+                    #elif in_['use_geo_crit']:
+                    #    [dist,az,baz] = gps2dist(db[kpath1]['sta'][ksta1]['lat'],db[kpath1]['sta'][ksta1]['lon'],db[kpath2]['sta'][ksta2]['lat'],db[kpath2]['sta'][ksta2]['lon'])
+                    #    ipdb.set_trace()
+                    #    if dist < distmax and dist> distmin:
+                    #        addcorr = True
+                    #        print(id0 + '_' + id1)
+                    else:
+                        addcorr = True
+                    if addcorr:
+                        md['lat'].append([db[kpath1]['sta'][ksta1]['lat'],db[kpath2]['sta'][ksta2]['lat']])
+                        md['lon'].append([db[kpath1]['sta'][ksta1]['lon'],db[kpath2]['sta'][ksta2]['lon']])
+                        md['elev'].append([db[kpath1]['sta'][ksta1]['elev'],db[kpath2]['sta'][ksta2]['elev']])
+                        md['depth'].append([db[kpath1]['sta'][ksta1]['depth'],db[kpath2]['sta'][ksta2]['depth']])
+                        md['id'].append([id0,id1])
+                        sta_pair.append([ista1, ista2])
             #now split station pair per group of npath per file and choose the name of the ouput file :
             npath_in_this_subset=0
             nsubset=-1
@@ -609,7 +648,7 @@ def ml_stack_and_write_this_set_in_hdf5_ev(in_,md_c,kset) :
     ref_nstack = ff.create_dataset('/ref_nstack',(ncmp,ncpl),dtype=in_['cc_dtype'])
 
     for ipath in range(0,ncpl) :
-        perc = ipath * 100. / (ncpl-1)
+        perc = ipath * 100. / (ncpl)
         if perc % 10 == 0:
             dd.dispc(str(ipath+1) + ' / ' +  str(ncpl) + '  paths','gray','r')
         for icmp in range(0,ncmp) :
