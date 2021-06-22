@@ -201,11 +201,11 @@ def find_stations(input_user={},stafile='stations',all_locid_and_channel=False):
 
 
 def mmap(lon=[2.39,5.72],lat=[47.08,45.18],filename='stations.png',info='station map'):
-    stamen_terrain = Stamen('terrain-background')
+    stamen_terrain = Stamen('terrain')
     ax = plt.axes(projection=stamen_terrain.crs)
     minlat = -80
     maxlat = 80
-    dl     = 0.1
+    dl     = 0.01
     minlon = -180+dl/2
     maxlon = 180-dl/2
     r      = int(locations2degrees(min(lat),min(lon),max(lat),max(lon))*111)
@@ -217,16 +217,18 @@ def mmap(lon=[2.39,5.72],lat=[47.08,45.18],filename='stations.png',info='station
     ax.set_extent([minlon, maxlon, minlat, maxlat])
     r = int(locations2degrees(minlat,minlon,maxlat,maxlon)*111)
     if r <= 1000 :
-        res = 8 
+        res = 10 
         ax.coastlines('10m')
+        scale_bar(ax,r/10-r/10%10)
     if r > 1000 and r <= 5000:
-        res = 6
-        ax.coastlines('50m')    
+        res = 8
+        ax.coastlines('50m')
+        scale_bar(ax,r/10-r/10%10)  
     if r > 5000 and r <= 10000: 
-        res = 4
+        res = 6
         ax.coastlines('110m')
     if r > 10000: 
-        res = 2
+        res = 3
         ax.coastlines('110m')
     ax.add_image(stamen_terrain,res)
     gl = ax.gridlines(draw_labels=True,linewidth=0.5, color='gray', alpha=0.5)
@@ -240,7 +242,26 @@ def mmap(lon=[2.39,5.72],lat=[47.08,45.18],filename='stations.png',info='station
     plt.close()
 
 
-
+def scale_bar(ax, length=None, location=(0.5, 0.05), linewidth=3):
+    llx0, llx1, lly0, lly1 = ax.get_extent(ccrs.PlateCarree())
+    sbllx = (llx1 + llx0) / 2
+    sblly = lly0 + (lly1 - lly0) * location[1]
+    tmc = ccrs.TransverseMercator(sbllx, sblly)
+    x0, x1, y0, y1 = ax.get_extent(tmc)
+    sbx = x0 + (x1 - x0) * location[0]
+    sby = y0 + (y1 - y0) * location[1]
+    if not length: 
+        length = (x1 - x0) / 5000 #in km
+        ndim = int(np.floor(np.log10(length))) #number of digits in number
+        length = round(length, -ndim) #round to 1sf
+        def scale_number(x):
+            if str(x)[0] in ['1', '2', '5']: return int(x)        
+            else: return scale_number(x - 10 ** ndim)
+        length = scale_number(length) 
+    bar_xs = [sbx - length * 500, sbx + length * 500]
+    ax.plot(bar_xs, [sby, sby], transform=tmc, color='k', linewidth=linewidth)
+    ax.text(sbx, sby, str(length) + ' km', transform=tmc,
+            horizontalalignment='center', verticalalignment='bottom')
 
 
 
