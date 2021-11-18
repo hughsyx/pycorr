@@ -17,29 +17,29 @@ in_                   = {}
 # =====>    http://service.iris.edu/irisws/fedcatalog/1/
 #in_['key']        = value 
 
-stafile                = 'stations' # output name (.txt and .png)
+stafile                = 'stations07' # output name (.txt and .png)
 
 ###############  channel ID
 
-in_['net']                 = 'G,II' # 'net1,net2,net2...' accept wildcard
+in_['net']                 = '*' # 'net1,net2,net2...' accept wildcard
 in_['sta']                 = '*' # 'sta1,sta2,sta3...' accept wildcard
 in_['loc']                 = '*' # 'loc1,loc2,loc3...' accept wildcard
-in_['channel']             = 'LHZ' # 'ch1,ch2,ch3...' accept wildcard
+in_['channel']             = 'BHZ,HHZ,SHZ,EHZ' # 'ch1,ch2,ch3...' accept wildcard
 in_['includeavailability'] = True  # Specify if results should include information
                                    # about time series data availability at the channel level.
 ###############  date selection
 
-in_['startbefore']     = '2018-01-01' # yyyy-mm-dd
-in_['endafter']        = '2018-12-31' # yyyy-mm-dd
+in_['startbefore']     = '2014-12-09' # yyyy-mm-dd
+in_['endafter']        = '2014-12-10' # yyyy-mm-dd
 #in_['start']           = '2013-04-16' # yyyy-mm-dd
 #in_['end']             = '2013-04-30' # yyyy-mm-dd
 
 ###############  for a circular search :
 
-#in_['lat']             = '55' # center point lat
-#in_['lon']             = '-10' # center point lon
-#in_['maxradius']       = '75' # max radius
-#in_['minradius']       = '60' # min radius
+in_['lat']             = '63.0' # center point lat
+in_['lon']             = '-33.0' # center point lon
+in_['maxradius']       = '180.00' # max radius
+in_['minradius']       = '90.001' # min radius
 
 ###############  for a rectangular search :
 
