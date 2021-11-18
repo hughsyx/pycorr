@@ -596,6 +596,8 @@ def load_from_source(queue,in_,out_file,client,date1,date2,ista,icmp) :
             else : 
                 st = read_SDS(ista['net'],ista['name'],ista['loc'],ista['ch']+icmp,date1-tap_len,date2+tap_len,archive_path,meta_path,tap_len,remove_resp)
         else :
+            dd.dd(ista)
+            #print(ista['net'] + '  ' + ista['name'] + '  ' + ista['loc'] + '  ' + ccmp + '  ' + date1 + '  ' + date2)
             if 'ch' not in ista :
                 dd.dispc('      attempting to find ch (WEB)','c','d')
                 st,ista = determine_ch_and_locid_from_client(ista,icmp,in_['ch'],client,date1-tap_len,date2+tap_len)
@@ -944,20 +946,33 @@ def glitchCorrectionWithFactorStd(Trace, FactorTestStd, NumberOfStd = 1, FactorR
 #------ DOWNLOAD SUBFUNCTIONS  ------------------------------------
 #------------------------------------------------------------------
 
-
 def initialize_client(data_center,db) :
     try :
         if data_center=='IRISPH5':
             dd.dispc('  IRISPH5 ...','b','n')
             DATASELECT="http://service.iris.edu/ph5ws/dataselect/1"
             client = obspy.clients.fdsn.Client(service_mappings={'dataselect': DATASELECT})
-        else:
+        elif data_center=='AUSPASS':
+            data_center = 'http://auspass.edu.au:80'
+        elif data_center=='BATS':
+            data_center = 'http://batsws.earth.sinica.edu.tw'
+        elif data_center=='UIB-NORSAR':
+            data_center = 'https://eida.geo.uib.no'
+            #if data_center in ['EIDA', 'ODC', 'GFZ', 'RESIF', 'INGV', 'ETHZ', 'BGR', 'NIEP', 'KOERI', 'LMU', 'NOA', 'UIB-NORSAR', 'ICGC'] :
+            #    data_center = 'http://eida-federator.ethz.ch'
+        client = obspy.clients.fdsn.Client(data_center,user=db['user_id'],password=db['password'])
+        dd.dispc('  data center ' + data_center + ' ok', 'g', 'n')
+    except :
+        try :
+            data_center = 'http://eida-federator.ethz.ch'
             client = obspy.clients.fdsn.Client(data_center,user=db['user_id'],password=db['password'])
-    except : 
-        client = False
-        dd.dispc('  data center ' + data_center + ' cannot be reach','r','n')
-    return client 
-                        
+            dd.dispc('  data center ' + data_center + ' ok', 'g', 'n')        
+        except :
+            client = False
+            dd.dispc('  data center ' + data_center + ' cannot be reach','r','n')
+    return client
+
+
 
 #------------------------------------------
 def has_this_ch_already_been_dowloaded(mode,h5_filename,ista,icmp,md) : 

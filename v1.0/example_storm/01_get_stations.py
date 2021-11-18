@@ -17,7 +17,7 @@ in_                   = {}
 # =====>    http://service.iris.edu/irisws/fedcatalog/1/
 #in_['key']        = value 
 
-stafile                = 'stations07' # output name (.txt and .png)
+stafile                = 'stations_test2' # output name (.txt and .png)
 
 ###############  channel ID
 
@@ -36,10 +36,10 @@ in_['endafter']        = '2014-12-10' # yyyy-mm-dd
 
 ###############  for a circular search :
 
-in_['lat']             = '63.0' # center point lat
-in_['lon']             = '-33.0' # center point lon
-in_['maxradius']       = '180.00' # max radius
-in_['minradius']       = '90.001' # min radius
+#in_['lat']             = '63.0' # center point lat
+#in_['lon']             = '-33.0' # center point lon
+#in_['maxradius']       = '180.00' # max radius
+#in_['minradius']       = '90.001' # min radius
 
 ###############  for a rectangular search :
 
