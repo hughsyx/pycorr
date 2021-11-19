@@ -601,15 +601,12 @@ def load_from_source(queue,in_,out_file,client,date1,date2,ista,icmp) :
             if 'ch' not in ista :
                 dd.dispc('      attempting to find ch (WEB)','c','d')
                 st,ista = determine_ch_and_locid_from_client(ista,icmp,in_['ch'],client,date1-tap_len,date2+tap_len)
-                #dd.dispc('      find ' + ista['ch'],'c','d')
             else :
                 try :
                     st = client.get_waveforms(ista['net'],ista['name'],ista['loc'],ista['ch']+icmp,date1-tap_len,date2+tap_len,attach_response=True)
-                    #dd.dispc('      already known ' + ista['ch'],'c','d')
                 except :
                     dd.dispc('      new attempt to find ch (WEB)','c','d')
-                    st,ista = determine_ch_and_locid_from_client(ista,icmp,in_['ch'],client,date1-tap_len,date2+tap_len)
-                    #dd.dispc('      find ' + ista['ch'],'c','d')
+                    st,ista = determine_ch_and_locid_from_client(ista,icmp,in_['ch'],client,date1-tap_len,date2+tap_len) 
     except :
         dd.dispc('      weird error during (down)load ??!','r','n')
 
@@ -631,7 +628,7 @@ def load_from_source(queue,in_,out_file,client,date1,date2,ista,icmp) :
         write_as_hdf5(out_file,st,ista,icmp)  
         queue.get()
         queue.put([ista,md])
-        dd.dispc('      write... DONE !','g','n')
+        dd.dispc('      write... DONE','g','n')
 
 
 #----------------------------------------
