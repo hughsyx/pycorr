@@ -597,7 +597,7 @@ def load_from_source(queue,in_,out_file,client,date1,date2,ista,icmp) :
                 st = read_SDS(ista['net'],ista['name'],ista['loc'],ista['ch']+icmp,date1-tap_len,date2+tap_len,archive_path,meta_path,tap_len,remove_resp)
         else :
             #dd.dd(ista)
-            print(ista['net'] + '  ' + ista['name'] + ' --- ' + date1 + '  ' + date2)
+            print(ista['net'] + '  ' + ista['name'] + ' --- ' + str(date1))
             if 'ch' not in ista :
                 dd.dispc('      attempting to find ch (WEB)','c','d')
                 st,ista = determine_ch_and_locid_from_client(ista,icmp,in_['ch'],client,date1-tap_len,date2+tap_len)
