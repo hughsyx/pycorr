@@ -12,8 +12,8 @@ in_                   = {}
 
 in_['ch']             = ['BH','HH','SH','EH'] # ['ch1','ch2',...] It will try in this order. Better to start from the lower sampling rate ['LH','BH','HH'...]
 in_['cmp']            = ['Z','E','N'] # ['cmp1','cmp2',...]
-in_['tag']            = 'glob_test' # subdirectory name for the output /data_*freq*Hz/dauly/**tag**/**year**/
-in_['station_list']   = 'stations_test.txt' # input station file from 00_get_stations.py or other
+in_['tag']            = 'glob_03' # subdirectory name for the output /data_*freq*Hz/dauly/**tag**/**year**/
+in_['station_list']   = 'stations03.txt' # input station file from 00_get_stations.py or other
 in_['path_out']       = './' # output path
 
 ############### conventional preprocessing

@@ -33,7 +33,7 @@ import m_pycorr.m10_get_data as get_data
 # Standard
 ############### 
 in_ = {}
-in_['path']='./data_4.0hz/events/glob_test/' # directory to run,
+in_['path']='./data_4.0hz/events/glob_02/' # directory to run,
 in_['mode']=1
 
 #   -- mode = 0 : Initial download: Do not require _metadata directory (containing metadata)
