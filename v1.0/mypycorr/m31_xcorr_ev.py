@@ -209,14 +209,17 @@ def xcorr_ev(inu, db, fe):
             md['id'] = []
             for ista1, ksta1 in enumerate(db[kpath1]['sta']):
                 for ista2, ksta2 in enumerate(db[kpath2]['sta']):
-                    #if (ipath1 == ipath2) and (ista2 < ista1): continue
+                    if (ista2 < ista1): continue
                     id0 = db[kpath1]['sta'][ksta1]['kname'].replace('_', '.')
                     id1 = db[kpath2]['sta'][ksta2]['kname'].replace('_', '.')
                     addcorr = False
                     if in_['use_list_xcorr']:
                         if id0 + '_' + id1 in list_xcorr or id1 + '_' + id0 in list_xcorr:
                             addcorr = True
-                            print(id0 + '_' + id1)
+                            print(id0, id1)
+                        else:
+                            addcorr = False
+                            #print(id0 + '_' + id1)
                     # elif in_['use_geo_crit']:
                     #    [dist,az,baz] = gps2dist(db[kpath1]['sta'][ksta1]['lat'],db[kpath1]['sta'][ksta1]['lon'],db[kpath2]['sta'][ksta2]['lat'],db[kpath2]['sta'][ksta2]['lon'])
                     #    ipdb.set_trace()
@@ -233,6 +236,7 @@ def xcorr_ev(inu, db, fe):
                         md['id'].append([id0, id1])
                         sta_pair.append([ista1, ista2])
             # now split station pair per group of npath per file and choose the name of the ouput file :
+            print(len(sta_pair))
             npath_in_this_subset = 0
             nsubset = -1
             for ipair in range(0, len(sta_pair)):
@@ -310,6 +314,7 @@ def main_loop_ev(ex):
     print('----------------------')
     print('now in main loop')
     # 1st loop : correlate the next set where no one is working (i.e no outdir and its not finished)
+    print(ex['set'].values())
     for kset in ex['set'].values():
         if os.path.isdir(kset['out_dir']): continue
         if os.path.isfile(kset['out_file']) or os.path.isfile(kset['out_file_lock']): continue
@@ -399,25 +404,25 @@ def correlate_this_set_ev(in_, md_c, kset):
                 successa = False  # succeeded in finding file h5 for station A
                 successb = False  # succeeded in finding file h5 for station B
                 for i in range(len(lines)):
-                    ligne = lines[i].split('    ')
+                    ligne = lines[i].split('\t')
                     if (key0[:-2]) == ligne[0]:  # if station is in sumup line number i
-                        inda = int(ligne[1])  # index of file *0indA.h5
+                        fileA = ligne[1]  # index of file *0indA.h5
                         successa = True  # success finding file
                 ff.close()
                 ff = open(kset['path2']+'sumup.txt','r') # same for station B
                 lines = ff.readlines()
                 for i in range(len(lines)):
-                    ligne = lines[i].split('    ')
+                    ligne = lines[i].split('\t')
                     if (key1[:-2]) == ligne[0]:
-                            indb = int(ligne[1])   # index of file *0indB.h5
+                            fileB = ligne[1]   # index of file *0indB.h5
                             successb = True  # success finding file 
                 ff.close()
                 if (not successa) or (not successb):
                     print('no data for this correlation %s %s'%(key0, key1))
                     continue  # if data not found print the station pair involved
                 # open files
-                h5a = h5py.File(h5a_name[inda], 'r')   # station A h5 file
-                h5b = h5py.File(h5b_name[indb], 'r')  # station B h5 file
+                h5a = h5py.File(fileA, 'r')   # station A h5 file
+                h5b = h5py.File(fileB, 'r')  # station B h5 file
                 h5_daily = h5py.File(h5_daily_name, 'a')  # file to write in
                 try:
                     trace0 = cts_read_data(h5a, kset['md']['id'][icpl:icpl + 1], [kcmp], 0) 
@@ -437,8 +442,7 @@ def correlate_this_set_ev(in_, md_c, kset):
                         cc_hr = cc_hr * in_['cc_scaling']
                     if in_['event_stack']:
                         # on suppose ici que chaque segment correle a la meme longueur :
-                        h5_daily['cc_nstack'][icmp, icpl, 0] = sum(
-                            ncorr)  # (I2[0]-I1[0])*md_c['tau']*sum(ncorr)/86400.0
+                        h5_daily['cc_nstack'][icmp, icpl, 0] = sum(ncorr)  # (I2[0]-I1[0])*md_c['tau']*sum(ncorr)/86400.0
                         dset_name = h5_get_station_pair_tree_path(kcpl, kcmp)
                         if in_['pws']:
                             h5_create_dataset(h5_daily, '/cc' + dset_name,
@@ -458,6 +462,7 @@ def correlate_this_set_ev(in_, md_c, kset):
                         h5_create_dataset(h5_daily, '/cc' + dset_name, cc_hr, in_['gzip'], in_['cc_dtype'])
                         # end of this day : close all opened h5 files :            
                 except:
+                    print('this pair is not correlated %s %s'%(key0, key1))
                     continue
                 h5a.close()
                 h5b.close()

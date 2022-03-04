@@ -343,7 +343,11 @@ def download_sta(input_user={}):
         if db['in_']['ev']['time_before']:
             date1 = date1 - db['in_']['ev']['time_before']
         path = define_path_sta(in_,db['ev'][iev]['ev_id'])  # path to write data to
-        for n, files in enumerate(path.keys()):
+        l = list(path.items())
+        random.shuffle(l)
+        path = dict(l)
+        for files in path.keys():
+            n = int(files[4:])
             if has_this_day_already_been_processed(in_['mode'],path[files]) : continue 
             create_lock_file(path[files]['h5_lock_file'])
             db_slice = {}
@@ -1268,7 +1272,7 @@ def define_path_sta(in_,ev_id) :
             path['file%d'%n]['h5_lock_file']  = path['file%d'%n]['h5_file']+'.lock'
         else :
             path['file%d'%n]['h5_lock_file']  = path['file%d'%n]['h5_file']+'.cplt'
-        path['file%d'%n]['metadata_dir']  = path['file%d'%n]['out_dir']+'/_metadata_%d'%n
+        path['file%d'%n]['metadata_dir']  = path['file%d'%n]['out_dir']+'/_metadata_%03d'%n
         path['file%d'%n]['metadata_mat']  = path['file%d'%n]['metadata_dir']+'/'+ev_id+'.mat'
         path['file%d'%n]['metadata_pkl']  = path['file%d'%n]['metadata_dir']+'/'+ev_id+'.pkl'
         mkdir(path['file%d'%n]['metadata_dir'])
