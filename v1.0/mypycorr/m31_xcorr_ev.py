@@ -214,9 +214,10 @@ def xcorr_ev(inu, db, fe):
                     id1 = db[kpath2]['sta'][ksta2]['kname'].replace('_', '.')
                     addcorr = False
                     if in_['use_list_xcorr']:
-                        if id0 + '_' + id1 in list_xcorr or id1 + '_' + id0 in list_xcorr:
+                        #print(id0 + '_' + id1)
+                        if id0 + '_' + id1 in list_xcorr: # or id1 + '_' + id0 in list_xcorr:
                             addcorr = True
-                            print(id0, id1)
+                            #print(id0, id1)
                         else:
                             addcorr = False
                             #print(id0 + '_' + id1)
@@ -313,6 +314,8 @@ def main_loop_ev(ex):
     => there are two layers of multiprocessing'''
     print('----------------------')
     print('now in main loop')
+    #print(ex)
+    #exit()
     # 1st loop : correlate the next set where no one is working (i.e no outdir and its not finished)
     print(ex['set'].values())
     for kset in ex['set'].values():
@@ -391,7 +394,6 @@ def correlate_this_set_ev(in_, md_c, kset):
         h5b_name.sort()
         h5_daily_name = h5_daily.filename
         h5_daily.close()
-
         for icmp, kcmp in enumerate(in_['cc_cmp']):
             sys.stderr.flush()
             sys.stdout.flush()
@@ -427,6 +429,8 @@ def correlate_this_set_ev(in_, md_c, kset):
                 try:
                     trace0 = cts_read_data(h5a, kset['md']['id'][icpl:icpl + 1], [kcmp], 0) 
                     trace1 = cts_read_data(h5b, kset['md']['id'][icpl:icpl + 1], [kcmp], 1)
+                    #print(trace0)
+                    #print(trace1)
                     if in_['pp']:
                         dd.dispc(
                             '                         : ' + _cts_get_current_hr_as_str() + ' : pre processing 1st set',
@@ -440,6 +444,7 @@ def correlate_this_set_ev(in_, md_c, kset):
                     # multiply the correlation by a constant
                     if in_['cc_func'] != 'ctp_xcorr_norm':
                         cc_hr = cc_hr * in_['cc_scaling']
+                    #print(cc_hr)
                     if in_['event_stack']:
                         # on suppose ici que chaque segment correle a la meme longueur :
                         h5_daily['cc_nstack'][icmp, icpl, 0] = sum(ncorr)  # (I2[0]-I1[0])*md_c['tau']*sum(ncorr)/86400.0
