@@ -686,7 +686,10 @@ class c1_md :
 
     def _save_idv(self,data,time,dist,idvs,idvr,opt) :
         dico = self._get_idv(data,time,dist,idvs,idvr,opt)
-        mkdir(os.path.dirname(opt['file_name']))
+        try:
+            mkdir(os.path.dirname(opt['file_name']))
+        except:
+            pass
         #ipdb.set_trace()
         #for kname in opt:
         #    dico[kname]= opt[kname]
@@ -893,7 +896,7 @@ def build_db_file(file_list) :
         if db['lon'][ipath][0] and db['lon'][ipath][1]:            
             [dist,az,baz] = gps2dist(db['lat'][ipath][0],db['lon'][ipath][0],db['lat'][ipath][1],db['lon'][ipath][1])
             db['dist'][ipath] = dist/1000.
-            db['az'][ipath]   = az 
+            db['az'][ipath]   = az
             db['baz'][ipath]  = baz 
         else:
             db['dist'][ipath] = degrees2kilometers(abs(db['lat'][ipath][0]-db['lat'][ipath][1]))

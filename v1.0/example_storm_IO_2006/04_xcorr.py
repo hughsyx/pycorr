@@ -49,14 +49,14 @@ import numpy as np
 in_ = {}
 
 ############### PATH(S)
-#in_['path']              = ['./data_4.0hz/events/glob_00','./data_4.0hz/events/glob_01','./data_4.0hz/events/glob_02','./data_4.0hz/events/glob_03','./data_4.0hz/events/glob_04','./data_4.0hz/events/glob_05','./data_4.0hz/events/glob_06','./data_4.0hz/events/glob_07'] # list of path to correlate ['../daily/tag1,', '../daily/tag2']
-in_['path']              = ['./data_4.0hz/events/glob_07'] # list of path to correlate ['../daily/tag1,', '../daily/tag2']
+in_['path']              = ['./data_4.0hz/events/IO_00','./data_4.0hz/events/IO_01','./data_4.0hz/events/IO_02','./data_4.0hz/events/IO_03','./data_4.0hz/events/IO_04'] # list of path to correlate ['../daily/tag1,', '../daily/tag2']
+#in_['path']              = ['./data_4.0hz/events/glob_07'] # list of path to correlate ['../daily/tag1,', '../daily/tag2']
 in_['path_out']          = './' # output path
-in_['tag']               = 'glob_storm_PcP_pws' # output label (opt)
+in_['tag']               = 'IO_storm_P-PKP_PWS_2d' # output label (opt)
 in_['file_size']         = 5. # [Gb] maximum size of each final h5 file, an good way to increase parallelization 
 
 ############## DATES
-in_['start_time']        = 0 # start correlating n sec after source time 
+in_['start_time']        = -24*3600 # start correlating n sec after source time 
 in_['time_win']          = 3600*2 # time window to correlate in sec
 in_['time_overlap']      = 3600 # time window to correlate in sec
 
@@ -97,7 +97,7 @@ in_['pp']                = [] # same as pre-processing recipe ...
 #in_['pp_args']           = [arg_filter]
 
 in_['use_list_xcorr'] = True  # use the list or not , default FALSE (ie compute all)
-in_['list_xcorr'] = 'list_xcorr_PcP.txt' 
+in_['list_xcorr'] = 'list_xcorr_P-PKP.txt' 
 
 ############### RUN
 xcorr.xcorr_list_ev(in_)

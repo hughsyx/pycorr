@@ -57,7 +57,6 @@ def main_rot(input_user={}):
     list_file_rtz = glob.glob(in_['path']+'/*_RTZ.h5')
     for del_f in list_file_rtz:list_file.remove(del_f)
 
-    ipdb.set_trace()
     compos         = ['EE','EN','EZ','NE','NN','NZ','ZE','ZN','ZZ']
     new_compos     = ['RR','RT','RZ','TR','TT','TZ','ZR','ZT','ZZ']
     requested      = np.array([[1,1,0,1,1,0,0,0,0], 
@@ -70,7 +69,7 @@ def main_rot(input_user={}):
                       [0,0,0,0,0,0,1,1,0],
                       [0,0,0,0,0,0,0,0,1]])
 
-    start    = time.clock()
+    start    = time.time()
     for file_in in list_file:
         outdir = os.path.dirname(file_in) + '/RTZ/'
         mkdir(outdir)
@@ -116,7 +115,7 @@ def main_rot(input_user={}):
                 dset = fout.create_dataset(group_ref_id + '/'+ outch, data = data_ref[:,new_compos.index(outch)],dtype=in_['format'])
                 if cc_matrix :
                     dset = fout.create_dataset(group_cc_id + '/'+ outch, data = data_cc[:,:,new_compos.index(outch)],dtype=in_['format'])
-            dd.dispc(group_ref_id + " Time : " + str(time.clock() - start),'g','n')
+            dd.dispc(group_ref_id + " Time : " + str(time.time() - start),'g','n')
 
         fout.close()
         fin.close()

@@ -615,6 +615,7 @@ def load_from_source(queue,in_,out_file,client,date1,date2,ista,icmp) :
 
     md = check_if_trace_correct(st,in_['qc']) #faiblesse du code les md doivent synchro ici
     if md['everything_correct'] :
+        st = process_trace(st,in_['pp'],date1,date2)
         try :
             st = process_trace(st,in_['pp'],date1,date2)
             if len(st):

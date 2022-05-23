@@ -154,8 +154,7 @@ def xcorr_ev(inu, db, fe):
     in_['svd_wiener2'] = False  # apply svd-wiener2 filter before stacking Moreau et al. 2017 (GJI)
     in_['svd_wiener2_m'] = 20  # date axis, number of point for wiener window
     in_['svd_wiener2_n'] = 20  # time lag axis, number of point for wiener window
-    in_[
-        'svd_wiener2_nvs'] = None  # number of singular value to keep, None will keep only singular values > 10% min value
+    in_['svd_wiener2_nvs'] = None  # number of singular value to keep, None will keep only singular values > 10% min value
     in_['remove_event_file'] = True  # rm or not daily files (keep them for debugging or if you plan to add dates
     in_['pp'] = []  # ['_comb_filter']# list of pre-processing to be applied
     in_['pp_args'] = []  # [{'p1' :[1,5,10,20,40], 'p2' : [5,10,20,40,80]} ]
@@ -193,6 +192,7 @@ def xcorr_ev(inu, db, fe):
 
     # list all station pair and their metadata as list => [md]:
     for ipath1, kpath1 in enumerate(in_['path']):
+        print(kpath1)
         for ipath2, kpath2 in enumerate(in_['path']):
             if ipath2 < ipath1: continue
             if in_['cc_tags'] == 2 and ipath2 == ipath1: continue
@@ -204,16 +204,23 @@ def xcorr_ev(inu, db, fe):
             md['elev'] = []
             md['depth'] = []
             md['id'] = []
+            md['flip'] = []
             for ista1, ksta1 in enumerate(db[kpath1]['sta']):
                 for ista2, ksta2 in enumerate(db[kpath2]['sta']):
+                    #if db[kpath2]['sta'][ksta2]['kname'][0:2] in ['AU']: 
                     if (ipath1 == ipath2) and (ista2 < ista1): continue
                     id0 = db[kpath1]['sta'][ksta1]['kname'].replace('_', '.')
                     id1 = db[kpath2]['sta'][ksta2]['kname'].replace('_', '.')
                     addcorr = False
+                    do_flip = False
                     if in_['use_list_xcorr']:
-                        if id0 + '_' + id1 in list_xcorr or id1 + '_' + id0 in list_xcorr:
+                        if id0 + '_' + id1 in list_xcorr:
                             addcorr = True
                             print(id0 + '_' + id1)
+                        elif id1 + '_' + id0 in list_xcorr:
+                            addcorr = True
+                            do_flip = True
+                            print(id1 + '_' + id0 + '-flip')
                     # elif in_['use_geo_crit']:
                     #    [dist,az,baz] = gps2dist(db[kpath1]['sta'][ksta1]['lat'],db[kpath1]['sta'][ksta1]['lon'],db[kpath2]['sta'][ksta2]['lat'],db[kpath2]['sta'][ksta2]['lon'])
                     #    ipdb.set_trace()
@@ -223,12 +230,22 @@ def xcorr_ev(inu, db, fe):
                     else:
                         addcorr = True
                     if addcorr:
-                        md['lat'].append([db[kpath1]['sta'][ksta1]['lat'], db[kpath2]['sta'][ksta2]['lat']])
-                        md['lon'].append([db[kpath1]['sta'][ksta1]['lon'], db[kpath2]['sta'][ksta2]['lon']])
-                        md['elev'].append([db[kpath1]['sta'][ksta1]['elev'], db[kpath2]['sta'][ksta2]['elev']])
-                        md['depth'].append([db[kpath1]['sta'][ksta1]['depth'], db[kpath2]['sta'][ksta2]['depth']])
-                        md['id'].append([id0, id1])
-                        sta_pair.append([ista1, ista2])
+                        if do_flip:
+                            md['lat'].append([db[kpath2]['sta'][ksta2]['lat'],db[kpath1]['sta'][ksta1]['lat']])
+                            md['lon'].append([db[kpath2]['sta'][ksta2]['lon'],db[kpath1]['sta'][ksta1]['lon']])
+                            md['elev'].append([db[kpath2]['sta'][ksta2]['elev'],db[kpath1]['sta'][ksta1]['elev']])
+                            md['depth'].append([db[kpath2]['sta'][ksta2]['depth'],db[kpath1]['sta'][ksta1]['depth']])
+                            md['id'].append([id1,id0])
+                            md['flip'].append(True)
+                            sta_pair.append([ista2, ista1])
+                        else:
+                            md['lat'].append([db[kpath1]['sta'][ksta1]['lat'],db[kpath2]['sta'][ksta2]['lat']])
+                            md['lon'].append([db[kpath1]['sta'][ksta1]['lon'],db[kpath2]['sta'][ksta2]['lon']])
+                            md['elev'].append([db[kpath1]['sta'][ksta1]['elev'],db[kpath2]['sta'][ksta2]['elev']])
+                            md['depth'].append([db[kpath1]['sta'][ksta1]['depth'],db[kpath2]['sta'][ksta2]['depth']])
+                            md['id'].append([id0,id1])
+                            md['flip'].append(False)
+                            sta_pair.append([ista1, ista2])
             # now split station pair per group of npath per file and choose the name of the ouput file :
             npath_in_this_subset = 0
             nsubset = -1
@@ -253,12 +270,14 @@ def xcorr_ev(inu, db, fe):
                     ex['set'][set_name]['md']['id'] = []
                     ex['set'][set_name]['md']['elev'] = []
                     ex['set'][set_name]['md']['depth'] = []
+                    ex['set'][set_name]['md']['flip'] = []
 
                 ex['set'][set_name]['md']['lat'].append(md['lat'][ipair])
                 ex['set'][set_name]['md']['lon'].append(md['lon'][ipair])
                 ex['set'][set_name]['md']['elev'].append(md['elev'][ipair])
                 ex['set'][set_name]['md']['depth'].append(md['depth'][ipair])
                 ex['set'][set_name]['md']['id'].append(md['id'][ipair])
+                ex['set'][set_name]['md']['flip'].append(md['flip'][ipair])
                 npath_in_this_subset = len(ex['set'][set_name]['md']['lat'])
                 if npath_in_this_subset >= npath_per_file:
                     npath_in_this_subset = 0
@@ -402,8 +421,12 @@ def correlate_this_set_ev(in_, md_c, kset):
                 h5b = h5py.File(h5b_name, 'r')
                 h5_daily = h5py.File(h5_daily_name, 'a')
                 try:
-                    trace0 = cts_read_data(h5a, kset['md']['id'][icpl:icpl + 1], [kcmp], 0)
-                    trace1 = cts_read_data(h5b, kset['md']['id'][icpl:icpl + 1], [kcmp], 1)
+                    if kset['md']['flip'][icpl]:
+                        trace0 = cts_read_data(h5b, kset['md']['id'][icpl:icpl + 1], [kcmp], 0)
+                        trace1 = cts_read_data(h5a, kset['md']['id'][icpl:icpl + 1], [kcmp], 1)
+                    else:                        
+                        trace0 = cts_read_data(h5a, kset['md']['id'][icpl:icpl + 1], [kcmp], 0)
+                        trace1 = cts_read_data(h5b, kset['md']['id'][icpl:icpl + 1], [kcmp], 1)
                     if in_['pp']:
                         dd.dispc(
                             '                         : ' + _cts_get_current_hr_as_str() + ' : pre processing 1st set',
@@ -500,7 +523,7 @@ def ex_get_md_c_ev(db, in_, fe):
             time['npts'] = int(time['fe'] * (time['t2']))  #
             time['time'] = np.arange(time['t1'], time['t2'], 1.0 / time['fe'])  # in second w.r to midnight
 
-            hr1 = np.arange(in_['start_time'], time['t2'] - in_['time_win'], in_['time_win'] - in_['time_overlap'])
+            hr1 = np.arange(in_['start_time'], time['t2'] - in_['time_win'] + 1 , in_['time_win'] - in_['time_overlap'])
             hr2 = hr1 + in_['time_win']
 
             # hr1 = np.arange(in_['start_time'],time['t2']-in_['time_win'],in_['time_win'])/3600.
@@ -528,8 +551,11 @@ def ex_get_md_c_ev(db, in_, fe):
                     md_c[iset][ev]['date2'].append((UTCDateTime(idate) + (hr2[ihr])).timestamp)
             md_c['date1'].extend(k for k in md_c[iset][ev]['date1'][:])
             md_c['date2'].extend(k for k in md_c[iset][ev]['date2'][:])
-    md_c['date1'].sort()
-    md_c['date2'].sort()
+    #md_c['date1'].sort()
+    #md_c['date2'].sort()
+    print('reminder : check md_c[date1/2] for noise data...')
+    md_c['date1'] = np.unique(np.array(md_c['date1'])).tolist()
+    md_c['date2'] = np.unique(np.array(md_c['date2'])).tolist()
     return md_c
 
 
