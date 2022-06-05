@@ -1,9 +1,8 @@
 # Default ignored files
-v1.0/**/*.png
-v1.0/**/*.pyc
-v1.0/**/*.mat
-v1.0/**/*.txt
-v1.0/**/*.pkl
-v1.0/**/*.pdf
-v1.0/**/*.m
-v1.0/**/*.h5
+v2.0/**/*.png
+v2.0/**/*.pyc
+v2.0/**/*.mat
+v2.0/**/*.txt
+v2.0/**/*.pkl
+v2.0/**/*.pdf
+v2.0/**/*.h5

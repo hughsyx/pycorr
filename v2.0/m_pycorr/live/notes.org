@@ -1,0 +1,44 @@
+
+
+
+* Flow of information when reading cross-correlations : 
+** detail :
+  xcorr_all/xcorr_CH_CH_0000.h5 :
+   - all correlations trace : /ref/sta1/sta2/ZZ 
+   - correlation metadata in 2D matrix  : lon,lat,id,elev,depth
+
+  db_c1.h5 
+    - used by all function that read CC, 
+    - contains table of station, files and component used to convert station/file/cmp index to name 
+
+  db_c1_by_files.h5 
+    - /xcorr_all/xcorr_CH_CH_0000/[I_sta,dist,az,baz]
+    - list station pair indices, dist,az,baz of each file.  
+    => by providing a file index or name we know what to read 
+   
+
+  read_from_file : 
+    - use db_c1.h5 file table : to convert the file index to a filename 
+    - use db_c1_by_files : for this filename get the station pair index, dist,az,baz : 
+    - use db_c1.h5 station table to add lon,lat,elev,depth
+    - call read_c1_ref_from_single_files 
+
+
+  read_c1_ref_from_single_file :
+    - read station pair in a loop
+    - use db_c1.h5 to convert station indice to station name to dset_name /ref/sta1/sta2/ZZ
+
+** In summary : 
+read_from_file : file indice, cpl indice
+ =>  [db_c1.h5, db_c1_by_files.h5]  => filename, station pair indice, lon,lat,dist,az ... 
+ =>  read_c1_from_single file  
+  =>  db_c1.h5  => station pair name, dsetname 
+
+* c1_md is taken from pycorr1.0 and used by c3. Legacy ?
+
+
+
+
+ 
+
+
