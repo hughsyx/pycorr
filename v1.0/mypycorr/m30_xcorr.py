@@ -841,7 +841,7 @@ def pws(data,timegate,power,fe,frmt) :
     s_c = np.convolve(signal.boxcar(box) / box, c, 'same')
     s_c = np.power(s_c, power)
     for trace in data:
-        stack += c * trace
+        stack += s_c * trace
     return stack.astype(frmt)
 
 #def pws_up(data,dic_args,fe,frmt) :
