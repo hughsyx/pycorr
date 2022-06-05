@@ -53,4 +53,4 @@ list_year                  = [2018] # list of targeted year
 for iyear in list_year : # loop over a range of dates
     in_['day1']=UTCDateTime(iyear,4,16) # date 1
     in_['day2']=UTCDateTime(iyear,5,16) # date 2
-    get_data.configure(in_)
+    #get_data.configure(in_)
