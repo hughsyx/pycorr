@@ -372,6 +372,7 @@ def core_download(in_,db,md,path,date1,date2):
         ista_arg = ista.copy()
         for icmp in db['in_']['cmp'] :
             t0        = time.time()
+            multiprocessing.set_start_method('fork', force=True)
             queue     = multiprocessing.Queue()                                                
             queue.put([ista_arg,0.])               # the second arg will contain the result 
             time.sleep(0.01)
